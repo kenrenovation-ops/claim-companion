@@ -334,9 +334,143 @@
     .actions .right { flex-direction: column; }
     button { width: 100%; }
   }
+
+  /* Persistent legal-terms glossary sidebar (always available, any screen) */
+  .glossary-tab {
+    position: fixed;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    border-radius: 6px 0 0 6px;
+    padding: 14px 8px;
+    font-size: 13px;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    cursor: pointer;
+    z-index: 40;
+    letter-spacing: 0.02em;
+  }
+  .glossary-tab:hover { background: #10202f; }
+
+  .glossary-panel {
+    position: fixed;
+    top: 0;
+    right: -360px;
+    width: 340px;
+    max-width: 88vw;
+    height: 100%;
+    background: #fff;
+    border-left: 1px solid var(--border);
+    box-shadow: -4px 0 18px rgba(0,0,0,0.08);
+    z-index: 50;
+    transition: right 0.25s ease;
+    display: flex;
+    flex-direction: column;
+  }
+  .glossary-panel.open { right: 0; }
+
+  .glossary-panel-header {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .glossary-panel-header h3 { margin: 0; font-size: 17px; }
+  .glossary-panel-close {
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    line-height: 1;
+    color: var(--ink-soft);
+    cursor: pointer;
+    padding: 4px 8px;
+  }
+  .glossary-panel-note {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--teal-soft);
+  }
+  .glossary-panel-list {
+    overflow-y: auto;
+    padding: 8px 20px 24px;
+    flex: 1;
+  }
+  .glossary-term {
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--border);
+  }
+  .glossary-term:last-child { border-bottom: none; }
+  .glossary-term .term { font-weight: 600; font-size: 14.5px; margin-bottom: 3px; }
+  .glossary-term .def { font-size: 13.5px; color: var(--ink-soft); line-height: 1.5; }
+
+  .glossary-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.25);
+    z-index: 45;
+    display: none;
+  }
+  .glossary-overlay.open { display: block; }
+
+  /* Compliance badge on the final output screen */
+  .compliance-badge {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--teal-soft);
+    border: 1px solid #bcdcdc;
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: #1a4a4d;
+    margin-bottom: 18px;
+  }
+  .compliance-badge .badge-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--teal);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .compliance-badge .badge-title { font-weight: 600; margin-bottom: 2px; }
+
+  /* Print-specific rules: used when exporting the final summary */
+  @media print {
+    .glossary-tab, .glossary-panel, .glossary-overlay,
+    .steps, .actions, .disclaimer-bar + .steps,
+    button { display: none !important; }
+    body { background: #fff; }
+    .card { border: 1px solid #999; break-inside: avoid; }
+    .compliance-badge { border-color: #999; }
+  }
 </style>
 </head>
 <body>
+
+<button class="glossary-tab" id="btnGlossaryTab" aria-label="Open legal terms glossary">Legal terms</button>
+<div class="glossary-overlay" id="glossaryOverlay"></div>
+<div class="glossary-panel" id="glossaryPanel">
+  <div class="glossary-panel-header">
+    <h3>Legal terms explained</h3>
+    <button class="glossary-panel-close" id="btnGlossaryClose" aria-label="Close">&times;</button>
+  </div>
+  <div class="glossary-panel-note">
+    Plain-English explanations of procedural terms used in this tool, based on the same reference material as the rest of the app. This is procedural information only, not legal advice — always verify against judiciary.gov.sg.
+  </div>
+  <div class="glossary-panel-list" id="glossaryPanelList"></div>
+</div>
 
 <div class="app">
 
@@ -670,10 +804,13 @@ You will be given the user's intake answers and their responses to counter-persp
   "source_tagged_facts": [
     {"fact": "a specific SCT process fact mentioned anywhere in your output", "grounded": true}
   ],
+  "glossary": [
+    {"term": "a legal or procedural term you actually used elsewhere in this output that a layperson likely won't know (e.g. Memorandum of Consent, CJTS, Declaration of Service, pre-filing assessment, unfair practice, Registrar's consultation, discontinuance order, Writ of Seizure and Sale, Garnishee proceedings) — omit plain everyday words, only include genuine jargon", "definition": "one short plain-English sentence explaining the term, based ONLY on the SCT reference material and GenAI guide reference material above — do not invent a definition for a term not covered there"}
+  ],
   "verify_reminder": "one short sentence reminding the user to check important details against judiciary.gov.sg (not against another AI tool) before filing — do NOT say disclosure of GenAI use is required, since the Guide does not require pre-emptive declaration"
 }
 
-Base every field on the actual user input given to you. Do not invent details the user did not provide — use "not specified" where information is missing. Keep the tone neutral and organisational, never advisory about legal merits.`;
+Base every field on the actual user input given to you. Do not invent details the user did not provide — use "not specified" where information is missing. Keep the tone neutral and organisational, never advisory about legal merits. For "glossary", only include terms that actually appear elsewhere in your own output (in checklist, source_tagged_facts, sct_relevance_note, or key_facts) — if your output contains no jargon terms, return an empty array rather than inventing terms to define.`;
 
 /* ============================================================
    BIAS-CHECK QUESTION GENERATION PROMPT
@@ -741,6 +878,60 @@ const INTAKE_QUESTIONS = [
     placeholder: "e.g. I messaged them twice asking for a refund but got no reply after the first response"
   }
 ];
+
+/* ============================================================
+   PERSISTENT LEGAL-TERMS GLOSSARY (always available, any screen)
+   Every definition here is written directly from SCT_REFERENCE and
+   GENAI_GUIDE_REFERENCE above (the same verified, cited reference
+   material the AI system prompt uses) — this is a static list, not
+   AI-generated, so it carries zero hallucination risk and needs no
+   API call. It's a broader companion to the per-case "glossary"
+   field the AI returns on the final output screen (which only lists
+   terms actually used in that specific summary); this sidebar covers
+   the fuller set of terms a user might encounter anywhere in the
+   process, available at any point in the flow.
+   ============================================================ */
+const STATIC_GLOSSARY = [
+  { term: "Small Claims Tribunals (SCT)", definition: "A part of the State Courts that resolves lower-value disputes more quickly and informally than a full civil trial." },
+  { term: "Claim limit (prescribed limit)", definition: "The maximum amount the SCT can award: SGD 20,000, or SGD 30,000 if both parties sign a Memorandum of Consent." },
+  { term: "Memorandum of Consent", definition: "A document both parties sign to raise the claim limit from SGD 20,000 to SGD 30,000." },
+  { term: "Cause of action", definition: "The specific event or wrong that gives you the legal right to bring a claim (e.g. the date a contract was broken)." },
+  { term: "Limitation period", definition: "The time limit within which a claim must be filed — generally 2 years from when the cause of action arose for most SCT claims." },
+  { term: "CJTS", definition: "The Community Justice and Tribunals System — the online portal used to file, serve, and manage an SCT claim." },
+  { term: "Pre-filing assessment", definition: "A step on CJTS you complete before filing, to check eligibility and get the assessment ID required to submit a claim. It's a non-conclusive indication only, not legal advice." },
+  { term: "Declaration of Service (DOS)", definition: "A form filed on CJTS confirming that the claim has been properly served on (delivered to) the respondent." },
+  { term: "Registrar's consultation", definition: "An early stage where a Registrar tries to help both parties reach a settlement, before the case goes to a full hearing." },
+  { term: "eNegotiation / eMediation", definition: "Online tools within CJTS that let both parties try to resolve the dispute themselves before any court session is needed." },
+  { term: "Tribunal Magistrate", definition: "The judicial officer who hears and decides an SCT case if it isn't resolved earlier through negotiation, mediation, or a Registrar's consultation." },
+  { term: "Judge-led approach", definition: "The tribunal itself identifies the key issues and draws out the relevant evidence, rather than expecting each side to argue their case the way a lawyer would." },
+  { term: "Money order / Work order", definition: "Two types of SCT orders: a money order requires payment of a stated sum; a work order requires specified work (e.g. a repair or replacement) by a due date." },
+  { term: "Default order", definition: "An order made when one party fails to appear — e.g. a money order against an absent respondent, or dismissal of the claim if the claimant doesn't appear." },
+  { term: "Consent order", definition: "An order that simply records a settlement both parties have already agreed to." },
+  { term: "Discontinuance order", definition: "An order made if the tribunal decides the claim is actually outside its jurisdiction — the claimant may still pursue the matter in another court." },
+  { term: "Setting aside (an order)", definition: "Applying to cancel a default order made against you, typically within 1 month, on the basis you had good reason not to appear." },
+  { term: "Enforcement", definition: "The separate legal process used to collect on an order if the other party doesn't pay voluntarily — not guaranteed to succeed, and involves its own fees." },
+  { term: "Writ of Seizure and Sale", definition: "An enforcement method where a bailiff seizes and sells the debtor's movable property to satisfy an unpaid order." },
+  { term: "Garnishee proceedings", definition: "An enforcement method where a third party who owes the debtor money (e.g. a bank) is ordered to pay the creditor directly instead." },
+  { term: "Unfair practice (CPFTA)", definition: "Under the Consumer Protection (Fair Trading) Act, conduct like misleading claims, false statements, or taking advantage of a consumer unable to protect their own interests." }
+];
+
+function renderStaticGlossary() {
+  document.getElementById("glossaryPanelList").innerHTML = STATIC_GLOSSARY.map(g => `
+    <div class="glossary-term">
+      <div class="term">${escapeHtml(g.term)}</div>
+      <div class="def">${escapeHtml(g.definition)}</div>
+    </div>
+  `).join("");
+}
+renderStaticGlossary();
+
+function toggleGlossaryPanel(open) {
+  document.getElementById("glossaryPanel").classList.toggle("open", open);
+  document.getElementById("glossaryOverlay").classList.toggle("open", open);
+}
+document.getElementById("btnGlossaryTab").addEventListener("click", () => toggleGlossaryPanel(true));
+document.getElementById("btnGlossaryClose").addEventListener("click", () => toggleGlossaryPanel(false));
+document.getElementById("glossaryOverlay").addEventListener("click", () => toggleGlossaryPanel(false));
 
 /* ============================================================
    STATE
@@ -1002,6 +1193,18 @@ function buildClaimSummaryFallback(intake, questions, answers) {
     sourceFacts.push({ fact: `Filing fees for this range are approximately ${fee}, per the reference material.`, grounded: true });
   }
 
+  // Static definitions for the jargon terms this fallback itself uses above
+  // (CJTS, Memorandum of Consent, eNegotiation/eMediation, enforcement),
+  // kept in sync with the checklist/source_tagged_facts so the fallback
+  // path offers the same term-clarification the live AI path does.
+  const glossary = [
+    { term: "CJTS", definition: "The Community Justice and Tribunals System — the online portal used to file, serve, and manage an SCT claim." },
+    { term: "Pre-filing assessment", definition: "A step on CJTS you complete before filing, to check eligibility and get the assessment ID required to submit a claim." },
+    { term: "Memorandum of Consent", definition: "A document both parties sign to raise the claim limit from SGD 20,000 to SGD 30,000." },
+    { term: "eNegotiation / eMediation", definition: "Online tools within CJTS that let both parties try to resolve the dispute themselves before any court session is needed." },
+    { term: "Enforcement", definition: "The separate legal process (e.g. a Writ of Seizure and Sale, or Garnishee proceedings) used to collect on an order if the other party doesn't pay voluntarily — not guaranteed to succeed, and involves its own fees." }
+  ];
+
   return {
     claim_summary: {
       dispute_type: intake.dispute_nature || "not specified",
@@ -1016,6 +1219,7 @@ function buildClaimSummaryFallback(intake, questions, answers) {
     })),
     checklist: checklist,
     source_tagged_facts: sourceFacts,
+    glossary: glossary,
     verify_reminder: "This summary was organised using a built-in template (the AI service couldn't be reached just now) — verify all details directly on judiciary.gov.sg before filing."
   };
 }
@@ -1090,6 +1294,7 @@ function renderOutput(data, isFallback) {
   const checklist = data.checklist || [];
   const counters = data.counter_perspective_considered || [];
   const sourceFacts = data.source_tagged_facts || [];
+  const glossary = data.glossary || [];
 
   const fallbackBanner = isFallback ? `
     <div class="bias-banner" style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
@@ -1098,8 +1303,19 @@ function renderOutput(data, isFallback) {
     </div>
   ` : "";
 
+  const complianceBadge = `
+    <div class="compliance-badge">
+      <span class="badge-icon">✓</span>
+      <div>
+        <div class="badge-title">Courts' GenAI Guide-aligned</div>
+        The process facts above are drawn only from the cited reference material embedded in this tool (SCT Act, CPFTA, judiciary.gov.sg, and the Registrar's GenAI Guide) — not freely generated. This is not a guarantee against every possible error; please still verify independently on judiciary.gov.sg before filing.
+      </div>
+    </div>
+  `;
+
   document.getElementById("outputContent").innerHTML = `
     ${fallbackBanner}
+    ${complianceBadge}
     <div class="card output-section">
       <h3>Claim summary</h3>
       <div class="summary-field"><span class="label">Dispute type</span><span>${escapeHtml(cs.dispute_type || "—")}</span></div>
@@ -1132,6 +1348,14 @@ function renderOutput(data, isFallback) {
       </ul>
     </div>
 
+    ${glossary.length ? `
+    <div class="card output-section">
+      <h3>Legal terms explained</h3>
+      ${glossary.map(g => `
+        <div class="summary-field"><span class="label">${escapeHtml(g.term)}</span><span>${escapeHtml(g.definition)}</span></div>
+      `).join("")}
+    </div>` : ""}
+
     ${sourceFacts.length ? `
     <div class="card output-section">
       <h3>Process facts referenced <span class="source-tag">grounded</span></h3>
@@ -1143,7 +1367,19 @@ function renderOutput(data, isFallback) {
     <div class="final-note">
       ${data.verify_reminder ? escapeHtml(data.verify_reminder) + " " : ""}This summary was generated to help you organise information — it is not legal advice and does not assess whether you will succeed. Fees, claim limits, and procedures should be verified on the State Courts website before filing. Consider speaking with a lawyer or the Community Justice Centre if you're unsure.
     </div>
+
+    <div class="actions" style="margin-top:8px;">
+      <span></span>
+      <div class="right">
+        <button class="ghost" id="btnExportPrint">Print / Save as PDF</button>
+      </div>
+    </div>
   `;
+
+  const exportBtn = document.getElementById("btnExportPrint");
+  if (exportBtn) {
+    exportBtn.addEventListener("click", () => window.print());
+  }
 
   if (isFallback) {
     document.getElementById("btnRetryAI").addEventListener("click", generateClaimSummary);
