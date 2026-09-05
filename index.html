@@ -1046,7 +1046,13 @@ async function generateClaimSummary() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        max_tokens: 1500,
+        // Raised from 1500: the JSON schema now includes a longer checklist,
+        // more source_tagged_facts, and richer sct_relevance_note guidance
+        // (per the fuller, statute-cited reference material), and 1500 was
+        // cutting the response off mid-JSON-object on some cases, which
+        // extractJson() correctly treats as a parse failure and falls back
+        // from — but the real fix is giving it enough room to finish.
+        max_tokens: 3000,
         system: SYSTEM_PROMPT,
         messages: [{ role: "user", content: userMessage }]
       })
