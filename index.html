@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Claim Companion — SCT Filing Assistant</title>
+<title>Claim Companion — SCT Preparation Assistant</title>
 <style>
   :root {
     --paper: #FAFAF7;
@@ -106,6 +106,18 @@
     opacity: 0.65;
     transition: width 0.2s ease;
   }
+
+  .stage-captions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin: -22px 0 26px;
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+  .stage-captions span.active { color: var(--teal); font-weight: 700; }
+  .stage-captions span.done { color: var(--teal); }
 
   .step-label {
     font-size: 13px;
@@ -247,7 +259,7 @@
     margin: 14px 0;
   }
 
-  textarea, input[type=text] {
+  textarea, input[type=text], input[type=date] {
     width: 100%;
     font-family: inherit;
     font-size: 15px;
@@ -258,7 +270,7 @@
     color: var(--ink);
     resize: vertical;
   }
-  textarea:focus, input[type=text]:focus, button:focus-visible {
+  textarea:focus, input[type=text]:focus, input[type=date]:focus, button:focus-visible {
     outline: 2px solid var(--teal);
     outline-offset: 1px;
   }
@@ -405,6 +417,7 @@
   }
 
   @media (max-width: 480px) {
+    .stage-captions { font-size: 9px; gap: 3px; }
     .summary-field { grid-template-columns: 1fr; }
     .actions { flex-direction: column-reverse; }
     .actions .right { flex-direction: column; }
@@ -553,7 +566,7 @@
   <header class="top">
     <div class="brand">
       <h1>Claim Companion</h1>
-      <span class="tag">SCT filing helper</span>
+      <span class="tag">SCT preparation helper</span>
     </div>
     <div class="disclaimer-bar" id="disclaimerBar">
       This tool helps you organise information for a possible Small Claims Tribunals filing. It does not give legal advice, does not guarantee your claim's success, and is not a substitute for consulting a lawyer or the State Courts. Built following the Courts' Guide on the Use of Generative AI Tools by Court Users.
@@ -565,6 +578,12 @@
     <div class="seg" data-seg="1"></div>
     <div class="seg" data-seg="2"></div>
     <div class="seg" data-seg="3"></div>
+  </div>
+  <div class="stage-captions" id="stageCaptions" aria-hidden="true">
+    <span data-stage="0">Start</span>
+    <span data-stage="1">SCT check & facts</span>
+    <span data-stage="2">Challenge</span>
+    <span data-stage="3">Summary</span>
   </div>
 
   <!-- SCREEN 0: INTRO -->
@@ -613,7 +632,7 @@
       <button class="ghost" id="btnGateBack">Back</button>
       <div class="right">
         <button class="ghost" id="btnGateStartOver">Start over</button>
-        <button class="primary" id="btnGateContinueAnyway">I understand, continue anyway</button>
+        <button class="primary" id="btnGateContinueAnyway">Continue to organise only</button>
       </div>
     </div>
   </section>
@@ -875,6 +894,7 @@ You must follow these rules strictly:
 4. STRUCTURE OVER PROSE: Where possible, respond with structured, labeled information rather than long paragraphs.
 5. TONE: Calm, plain language, no legal jargon without explanation.
 6. VERIFICATION GUIDANCE MUST MATCH THE GUIDE EXACTLY: the Guide does NOT require pre-emptive declaration of GenAI use — never tell the user they must disclose using this tool unless the Court asks. Instead, point them to an independent, known-accurate source to verify anything important: judiciary.gov.sg for SCT process/procedure. Never suggest that asking a GenAI tool (this one or any other) to confirm its own facts counts as verification — the Guide explicitly rules this out.
+7. COMPETENCE BOUNDARY: The user payload includes a deterministic preliminary_sct_check made from hard-coded reference rules. Respect it. If its status is "unlikely", do NOT tell the user to proceed with SCT filing, do NOT include a CJTS pre-filing assessment as a next step, and do NOT write as if SCT eligibility has been established. Instead, help organise facts/evidence and tell the user to verify the correct forum through official sources. If status is "needs_check", clearly state what still needs verification before any SCT filing step.
 
 SCT REFERENCE MATERIAL:
 ${SCT_REFERENCE}
@@ -899,7 +919,7 @@ You will be given the user's intake answers and their responses to counter-persp
     "a specific factual claim from the user's OWN account (in dispute_nature, prior_contact, or their counter-perspective responses) that is not backed by anything in their listed evidence — phrase plainly, e.g. 'That the contractor verbally promised completion by 30 March — this isn't in any of the evidence listed.' Base this ONLY on comparing what the user actually said against what they actually listed as evidence; do not invent claims they didn't make. If everything in their account is backed by listed evidence, or there isn't enough information to tell, return an empty array rather than inventing a gap."
   ],
   "checklist": [
-    "specific, concrete next step or document to gather, tailored to this case — include at least one item about completing the pre-filing assessment on CJTS to get an assessment ID (needed to file), one about verifying any process detail against judiciary.gov.sg directly (per the Guide's accuracy requirements, phrased naturally rather than as a disclaimer), and if the user's amount/evidence suggests they may eventually need to enforce an order, one item gently noting that enforcement is a separate step with its own effort and no guaranteed outcome"
+    "specific, concrete next step or document to gather, tailored to this case. If preliminary_sct_check.status is 'appears_possible', include the CJTS pre-filing assessment and independent verification on judiciary.gov.sg. If status is 'needs_check', prioritise resolving the flagged eligibility uncertainty before any filing step. If status is 'unlikely', do NOT give SCT filing steps; instead include preserving evidence, organising the timeline, and verifying the correct forum through official sources. Mention enforcement only where an SCT route remains realistically relevant."
   ],
   "source_tagged_facts": [
     {"fact": "a specific SCT process fact mentioned anywhere in your output", "grounded": true}
@@ -930,7 +950,7 @@ Do not be accusatory or assume the user is wrong. Do not give legal advice or as
 
 For each of the 3 items, return TWO separate fields:
 - "question": an open question that prompts the USER to reflect and respond in their own words (this is what gets shown to them with a text box).
-- "likely_argument": a short, blunt, one-sentence statement of what the OTHER PARTY would most plausibly argue on this specific point, based only on what the user has described — written as a direct claim (e.g. "The shop will likely argue the damage could have happened after you left the store, since nothing in your evidence rules that out."), not as a question.
+- "likely_argument": a short, one-sentence statement of what the OTHER PARTY could plausibly argue on this specific point, based only on what the user has described — written as a possible counter-position (e.g. "The shop could argue the damage happened after you left the store because the listed evidence does not establish when it occurred."), not as a question.
 
 Respond with ONLY a JSON object, no markdown fences, no preamble, in this exact shape:
 {"items": [
@@ -946,7 +966,8 @@ const INTAKE_QUESTIONS = [
   {
     id: "claim_category",
     title: "Which best describes your situation?",
-    hint: "This determines whether the Small Claims Tribunals can hear your matter at all — pick the closest match.",
+    hint: "Choose the closest match. This is a preliminary SCT suitability check, not a legal determination.",
+    sourceNote: "The categories and exclusions shown here are drawn from the SCT reference material used by this tool.",
     type: "radio",
     options: [
       { value: "goods_services", label: "A purchase of goods or a service that went wrong" },
@@ -962,7 +983,7 @@ const INTAKE_QUESTIONS = [
   {
     id: "dispute_nature",
     title: "What's the dispute about?",
-    hint: "Describe what happened in your own words — e.g. a purchase that went wrong, a deposit not returned, work not completed as agreed.",
+    hint: "Describe what happened in your own words. The tool will organise your account; it will not decide who is right.",
     type: "textarea",
     placeholder: "e.g. I paid a contractor a deposit for renovation work in March, but they stopped responding and never completed the job..."
   },
@@ -974,34 +995,67 @@ const INTAKE_QUESTIONS = [
     placeholder: "e.g. a renovation contractor / my landlord / an online seller"
   },
   {
+    id: "respondent_singapore",
+    title: "Can the other party be served in Singapore?",
+    hint: "For this preliminary check, tell us whether the respondent is located or can be served in Singapore.",
+    sourceNote: "The SCT reference material states that a claim against a respondent located outside Singapore cannot be heard where the claim cannot be served in Singapore.",
+    type: "radio",
+    options: [
+      { value: "yes", label: "Yes" },
+      { value: "no", label: "No" },
+      { value: "unsure", label: "I'm not sure" }
+    ]
+  },
+  {
     id: "amount",
     title: "What amount are you looking to claim, if any?",
     hint: "Give your best estimate in SGD. Leave blank if you're not seeking a specific amount.",
+    sourceNote: "Standard SCT claim limit: SGD 20,000. It can be raised to SGD 30,000 if both parties sign a Memorandum of Consent.",
     type: "text",
     placeholder: "e.g. $3,500"
   },
   {
+    id: "memorandum_consent",
+    title: "If your claim is above $20,000, have both parties signed a Memorandum of Consent?",
+    hint: "This only matters for claims above SGD 20,000 and up to SGD 30,000. Choose 'Not applicable' if your claim is SGD 20,000 or below.",
+    sourceNote: "A signed Memorandum of Consent is required to use the extended SCT limit up to SGD 30,000.",
+    type: "radio",
+    options: [
+      { value: "yes", label: "Yes, both parties have signed" },
+      { value: "no", label: "No" },
+      { value: "unsure", label: "I'm not sure" },
+      { value: "not_applicable", label: "Not applicable — my claim is SGD 20,000 or below" }
+    ]
+  },
+  {
+    id: "event_date",
+    title: "When did the key event giving rise to the dispute happen?",
+    hint: "Use the date the contract was broken, goods/services issue arose, or other key event. If you are unsure, use your best estimate and verify it later.",
+    sourceNote: "Most SCT claims generally must be filed within 2 years from when the cause of action arose. Unfair-practice claims can have a different limitation rule, so those require extra verification.",
+    type: "date"
+  },
+  {
     id: "timeline",
-    title: "When did this happen?",
-    hint: "Roughly when the issue started and any key dates since (payments, messages, deadlines given).",
+    title: "What happened, and in what sequence?",
+    hint: "List the key dates since the dispute began — payments, delivery, messages, promises, deadlines and responses.",
     type: "textarea",
     placeholder: "e.g. Paid deposit on 3 March 2026. Work was supposed to finish by 30 March. Last contact was 10 April."
   },
   {
     id: "evidence",
     title: "What evidence or documents do you already have?",
-    hint: "Receipts, contracts, messages, photos — just list what you have, not the content itself.",
+    hint: "Receipts, contracts, messages, photos — list what you have, not what you wish you had.",
     type: "textarea",
     placeholder: "e.g. Bank transfer receipt, WhatsApp messages with the contractor, photos of unfinished work"
   },
   {
     id: "prior_contact",
     title: "Have you already tried to resolve this directly with the other party?",
-    hint: "e.g. sent a message asking for a refund, asked them to fix the issue, sent a letter of demand.",
+    hint: "Tell us what you asked for and what they said or did in response.",
     type: "textarea",
     placeholder: "e.g. I messaged them twice asking for a refund but got no reply after the first response"
   }
-];
+]
 
 /* ============================================================
    PERSISTENT LEGAL-TERMS GLOSSARY (always available, any screen)
@@ -1060,7 +1114,7 @@ document.getElementById("glossaryOverlay").addEventListener("click", () => toggl
 /* ============================================================
    STATE
    ============================================================ */
-let currentScreen = "intro"; // intro | intake | bias | output
+let currentScreen = "intro"; // intro | intake | gate | bias | output
 let intakeIndex = 0;
 let intakeAnswers = {}; // id -> string
 let biasQuestions = []; // [{question}]
@@ -1095,10 +1149,14 @@ function setScreen(name) {
       // a granular fill based on actual question progress, updated again
       // from renderIntakeQuestion() as the user moves through it.
       fill.style.width = (name === "intake" || name === "gate")
-        ? `${Math.round((intakeIndex / INTAKE_QUESTIONS.length) * 100)}%`
+        ? `${Math.round(((intakeIndex + 1) / INTAKE_QUESTIONS.length) * 100)}%`
         : "100%";
       seg.appendChild(fill);
     }
+  });
+  document.querySelectorAll("#stageCaptions span").forEach((caption, i) => {
+    caption.classList.toggle("done", i < activeIdx);
+    caption.classList.toggle("active", i === activeIdx);
   });
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -1125,7 +1183,7 @@ function updateIntakeProgressFill() {
   const activeSeg = document.querySelectorAll(".steps .seg")[1]; // intake is segment index 1
   const fill = activeSeg && activeSeg.querySelector(".fill");
   if (fill) {
-    fill.style.width = `${Math.round((intakeIndex / INTAKE_QUESTIONS.length) * 100)}%`;
+    fill.style.width = `${Math.round(((intakeIndex + 1) / INTAKE_QUESTIONS.length) * 100)}%`;
   }
 }
 
@@ -1143,15 +1201,18 @@ function renderIntakeQuestion() {
       </label>
     `).join("")}</div>`;
   } else if (q.type === "textarea") {
-    inputTag = `<textarea id="intakeInput" placeholder="${escapeHtml(q.placeholder)}">${escapeHtml(existing)}</textarea>`;
+    inputTag = `<textarea id="intakeInput" placeholder="${escapeHtml(q.placeholder || "")}">${escapeHtml(existing)}</textarea>`;
+  } else if (q.type === "date") {
+    inputTag = `<input type="date" id="intakeInput" value="${escapeHtml(existing)}" max="${new Date().toISOString().slice(0,10)}">`;
   } else {
-    inputTag = `<input type="text" id="intakeInput" placeholder="${escapeHtml(q.placeholder)}" value="${escapeHtml(existing)}">`;
+    inputTag = `<input type="text" id="intakeInput" placeholder="${escapeHtml(q.placeholder || "")}" value="${escapeHtml(existing)}">`;
   }
 
   document.getElementById("questionBlock").innerHTML = `
     <h2>${escapeHtml(q.title)}</h2>
     <div class="hint">${escapeHtml(q.hint)}</div>
     ${inputTag}
+    ${q.sourceNote ? `<div class="info-note"><span class="source-tag" style="margin-left:0; margin-right:6px;">SCT Guide reference</span>${escapeHtml(q.sourceNote)}</div>` : ""}
   `;
 
   if (q.type === "radio") {
@@ -1170,13 +1231,12 @@ function renderIntakeQuestion() {
   updateIntakeProgressFill();
 }
 
-// Categories the SCT explicitly does not hear (see SCT_REFERENCE above) —
-// this is a hard-coded, deterministic check, not an AI judgment call, so
-// it's exactly as reliable as the reference material it's drawn from.
+// Categories the SCT explicitly does not hear (see SCT_REFERENCE above).
+// These checks are deterministic: the AI does not decide jurisdiction.
 const EXCLUDED_CATEGORIES = {
   motor_vehicle: {
     label: "property damage from a motor vehicle accident",
-    redirect: "This is generally pursued through the vehicle owners' insurers, or as a civil claim in the State Courts (Magistrate's or District Court, depending on the amount) — not the SCT."
+    redirect: "This is generally pursued through the vehicle owners' insurers, or as an ordinary civil claim in the State Courts depending on the amount — not the SCT."
   },
   neighbour: {
     label: "a dispute with a neighbour",
@@ -1184,13 +1244,75 @@ const EXCLUDED_CATEGORIES = {
   },
   employment: {
     label: "an employment-related dispute",
-    redirect: "Employment disputes (e.g. salary, wrongful dismissal) are generally handled by the Employment Claims Tribunals (ECT), not the SCT."
+    redirect: "Employment disputes such as salary or wrongful-dismissal claims are generally handled by the Employment Claims Tribunals (ECT), not the SCT."
   }
 };
 
 function showEligibilityGate(reasonHtml) {
   document.getElementById("gateCardContent").innerHTML = reasonHtml;
   setScreen("gate");
+}
+
+function twoYearCutoff() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setFullYear(d.getFullYear() - 2);
+  return d;
+}
+
+function evaluateSCTSuitability(intake) {
+  const reasons = [];
+  const warnings = [];
+  const category = intake.claim_category || "";
+  const amountNum = parseClaimAmount(intake.amount);
+
+  if (EXCLUDED_CATEGORIES[category]) {
+    reasons.push(EXCLUDED_CATEGORIES[category].redirect);
+  }
+  if (category === "other_unsure") {
+    warnings.push("The claim category is unclear, so this tool cannot confirm that it falls within an SCT category.");
+  }
+
+  if (intake.respondent_singapore === "no") {
+    reasons.push("The respondent appears not to be capable of being served in Singapore, which the SCT reference material flags as outside the SCT route.");
+  } else if (intake.respondent_singapore === "unsure") {
+    warnings.push("Whether the respondent can be served in Singapore still needs to be confirmed.");
+  }
+
+  if (amountNum !== null) {
+    if (amountNum > 30000) {
+      reasons.push("The amount entered exceeds the SCT's extended SGD 30,000 limit.");
+    } else if (amountNum > 20000 && intake.memorandum_consent !== "yes") {
+      reasons.push("The amount is above SGD 20,000, but both parties have not confirmed a signed Memorandum of Consent for the extended limit.");
+    }
+  } else {
+    warnings.push("The amount was not specified clearly enough to check against the SCT monetary limit.");
+  }
+
+  if (intake.event_date) {
+    const eventDate = new Date(intake.event_date + "T00:00:00");
+    if (!isNaN(eventDate.getTime()) && eventDate < twoYearCutoff()) {
+      if (category === "unfair_practice") {
+        warnings.push("The key event is more than 2 years ago. Unfair-practice claims can use a different limitation rule, so the filing deadline needs independent verification.");
+      } else {
+        reasons.push("The key event entered is more than 2 years ago, which is outside the general SCT filing period in the reference material.");
+      }
+    }
+  } else {
+    warnings.push("No key-event date was provided, so the general 2-year filing period could not be checked.");
+  }
+
+  return {
+    status: reasons.length ? "unlikely" : (warnings.length ? "needs_check" : "appears_possible"),
+    reasons,
+    warnings
+  };
+}
+
+function suitabilityLabel(result) {
+  if (result.status === "unlikely") return "SCT route flagged";
+  if (result.status === "needs_check") return "Further eligibility check needed";
+  return "No issue found in the basic SCT checks";
 }
 
 document.getElementById("btnGateBack").addEventListener("click", () => {
@@ -1217,13 +1339,94 @@ function readCurrentIntakeValue(q) {
   return document.getElementById("intakeInput").value.trim();
 }
 
+function showGateForCurrentAnswer(q, val) {
+  if (q.id === "claim_category" && EXCLUDED_CATEGORIES[val]) {
+    const info = EXCLUDED_CATEGORIES[val];
+    showEligibilityGate(`
+      <h2>The SCT route is flagged <span class="source-tag">SCT Guide reference</span></h2>
+      <p>You selected <strong>${escapeHtml(info.label)}</strong>. This category is excluded from the SCT route in the reference material used by this tool.</p>
+      <div class="gate-reason">${escapeHtml(info.redirect)}</div>
+      <p><strong>Claim Companion will not treat this as an SCT filing.</strong> You may continue only to organise your facts and evidence. Verify the correct forum using official Singapore Courts information or legal advice.</p>
+    `);
+    return true;
+  }
+
+  if (q.id === "claim_category" && val === "other_unsure") {
+    showEligibilityGate(`
+      <h2>The SCT category is unclear <span class="source-tag">SCT Guide reference</span></h2>
+      <p>You selected <strong>Something else / not sure</strong>.</p>
+      <div class="gate-reason">Claim Companion cannot confirm from the basic category check that this matter falls within the types of claims the SCT can hear.</div>
+      <p>You may continue to organise your facts and evidence, but verify the correct forum before taking an SCT filing step.</p>
+    `);
+    return true;
+  }
+
+  if (q.id === "respondent_singapore" && val === "no") {
+    showEligibilityGate(`
+      <h2>Service in Singapore is a problem <span class="source-tag">SCT Guide reference</span></h2>
+      <p>You indicated that the other party cannot be served in Singapore.</p>
+      <div class="gate-reason">The SCT reference material states that a claim cannot proceed through the SCT where the respondent cannot be served in Singapore.</div>
+      <p>Claim Companion can still organise your information, but it will not give you SCT filing steps as though this check had passed.</p>
+    `);
+    return true;
+  }
+
+  if (q.id === "amount") {
+    const amountNum = parseClaimAmount(val);
+    if (amountNum !== null && amountNum > 30000) {
+      showEligibilityGate(`
+        <h2>Your amount exceeds the SCT's limit <span class="source-tag">SCT Guide reference</span></h2>
+        <p>You entered <strong>${escapeHtml(val)}</strong>. The SCT's standard claim limit is SGD 20,000, extendable to SGD 30,000 with both parties' signed Memorandum of Consent.</p>
+        <div class="gate-reason">This amount is above both limits. The SCT Act also contains rules on abandoning excess amounts, but doing so can permanently affect the balance of the original claim. Verify the consequences before choosing that route.</div>
+        <p>You may continue only to organise your facts. The final summary will flag that the basic SCT monetary check did not pass.</p>
+      `);
+      return true;
+    }
+  }
+
+  if (q.id === "memorandum_consent") {
+    const amountNum = parseClaimAmount(intakeAnswers.amount);
+    if (amountNum !== null && amountNum > 20000 && amountNum <= 30000 && val !== "yes") {
+      showEligibilityGate(`
+        <h2>Written consent is needed for this amount <span class="source-tag">SCT Guide reference</span></h2>
+        <p>Your claim amount is above SGD 20,000 and not more than SGD 30,000.</p>
+        <div class="gate-reason">The extended SCT limit applies only if both parties sign a Memorandum of Consent. Without confirmed written consent, the standard SGD 20,000 limit applies.</div>
+        <p>You may continue to organise the case, but Claim Companion will not treat this as having passed the SCT monetary check.</p>
+      `);
+      return true;
+    }
+  }
+
+  if (q.id === "event_date" && val) {
+    const eventDate = new Date(val + "T00:00:00");
+    if (!isNaN(eventDate.getTime()) && eventDate < twoYearCutoff()) {
+      if (intakeAnswers.claim_category === "unfair_practice") {
+        showEligibilityGate(`
+          <h2>The filing deadline needs closer checking <span class="source-tag">SCT Guide reference</span></h2>
+          <p>The date you entered is more than 2 years ago.</p>
+          <div class="gate-reason">Most SCT claims generally use a 2-year period from the cause of action. The reference material notes a different limitation rule for certain unfair-practice claims, so this tool should not make a conclusive deadline decision here.</div>
+          <p>You can continue to organise your information, but verify the limitation period independently before filing.</p>
+        `);
+      } else {
+        showEligibilityGate(`
+          <h2>The general 2-year period is exceeded <span class="source-tag">SCT Guide reference</span></h2>
+          <p>The key-event date you entered is more than 2 years ago.</p>
+          <div class="gate-reason">The SCT reference material states that a claim generally must be filed within 2 years from when the cause of action arose.</div>
+          <p>You may continue only to organise your information. Verify the actual limitation position before relying on the SCT route.</p>
+        `);
+      }
+      return true;
+    }
+  }
+
+  return false;
+}
+
 document.getElementById("btnIntakeNext").addEventListener("click", async () => {
   const q = INTAKE_QUESTIONS[intakeIndex];
   const val = readCurrentIntakeValue(q);
 
   if (q.type === "radio" && !val) {
-    // Don't silently accept an unanswered required category question —
-    // this gate is only reliable if this question is actually answered.
     document.getElementById("questionBlock").querySelector(".hint").insertAdjacentHTML("afterend",
       '<div style="color:var(--error); font-size:13px; margin-bottom:10px;">Please choose one option to continue.</div>');
     return;
@@ -1231,33 +1434,7 @@ document.getElementById("btnIntakeNext").addEventListener("click", async () => {
 
   intakeAnswers[q.id] = val;
 
-  // GATE 1: excluded claim category (motor vehicle / neighbour / employment).
-  // Hard-coded against SCT_REFERENCE's stated exclusions — not an AI call,
-  // not a judgment call, just a direct lookup.
-  if (q.id === "claim_category" && EXCLUDED_CATEGORIES[val]) {
-    const info = EXCLUDED_CATEGORIES[val];
-    showEligibilityGate(`
-      <h2>The SCT likely can't hear this <span class="source-tag">SCT Guide reference</span></h2>
-      <p>You selected <strong>${escapeHtml(info.label)}</strong>. Based on the reference material this tool is grounded in, the Small Claims Tribunals generally does not hear this category of dispute.</p>
-      <div class="gate-reason">${escapeHtml(info.redirect)}</div>
-      <p>This isn't a legal determination — every case has specifics that could change this. If you're not sure, you can continue anyway and the tool will still organise your information, but you should verify the right venue on judiciary.gov.sg or with a lawyer before relying on the SCT route.</p>
-    `);
-    return;
-  }
-
-  // GATE 2: claim amount exceeds even the extended SCT limit.
-  if (q.id === "amount") {
-    const amountNum = parseClaimAmount(val);
-    if (amountNum !== null && amountNum > 30000) {
-      showEligibilityGate(`
-        <h2>Your amount exceeds the SCT's limit <span class="source-tag">SCT Guide reference</span></h2>
-        <p>You entered <strong>${escapeHtml(val)}</strong>. The SCT's claim limit is SGD 20,000, or SGD 30,000 if both parties sign a Memorandum of Consent — based on the reference material, this amount is above both.</p>
-        <div class="gate-reason">You have two options: pursue the claim in a different court for the full amount (e.g. the State Courts' District Court, depending on the amount) — a lawyer can advise on this — or, per the Small Claims Tribunals Act, you may "abandon" the amount above SGD 30,000 to bring the claim within the SCT's jurisdiction. Abandoning the excess is a full and final discharge of the whole original claim, not just the reduced portion — you would be giving up that excess permanently.</div>
-        <p>This isn't a legal determination. If you'd like to continue anyway (e.g. because you intend to abandon the excess), you can — the tool will organise your information based on the amount you entered.</p>
-      `);
-      return;
-    }
-  }
+  if (showGateForCurrentAnswer(q, val)) return;
 
   if (intakeIndex < INTAKE_QUESTIONS.length - 1) {
     intakeIndex++;
@@ -1348,27 +1525,41 @@ function extractJson(rawText) {
   return JSON.parse(cleaned.slice(start, end + 1));
 }
 
+function compactExcerpt(value, max = 150) {
+  const text = (value || "").replace(/\s+/g, " ").trim();
+  return text.length > max ? text.slice(0, max - 1) + "…" : text;
+}
+
 function buildCounterQuestions(answers) {
-  const qs = [];
-  qs.push({
-    question: "If the other party described this dispute, what do you think they would say happened?",
-    likely_argument: "The other party will likely present a different account of what happened or why, rather than accepting your version outright."
-  });
-  if (answers.evidence && answers.evidence.length > 0) {
+  const party = compactExcerpt(answers.other_party, 70) || "the other party";
+  const dispute = compactExcerpt(answers.dispute_nature, 170) || "the events you described";
+  const evidence = compactExcerpt(answers.evidence, 170);
+  const contact = compactExcerpt(answers.prior_contact, 150);
+
+  const qs = [{
+    question: `You described this dispute as: “${dispute}” What would ${party} say they actually delivered, agreed to, or did differently from your version?`,
+    likely_argument: `${party} could dispute your version of what was promised, delivered, or caused, rather than accepting your account as complete.`
+  }];
+
+  if (evidence) {
     qs.push({
-      question: "Is there anything about your evidence that might be incomplete, unclear, or open to a different interpretation?",
-      likely_argument: "The other party may argue your evidence doesn't clearly prove what you say it does, or is open to another explanation."
+      question: `You listed this evidence: “${evidence}” Which important part of your own account is not directly shown by any of those items?`,
+      likely_argument: `${party} could argue that an important assertion is unsupported if the listed documents do not show when, how, or by whom the disputed event occurred.`
     });
   } else {
     qs.push({
-      question: "You haven't listed much evidence yet — is there a reason certain documents or proof might be missing or hard to get?",
-      likely_argument: "Without documented evidence, the other party may argue there's nothing concrete supporting your account."
+      question: `You have not listed supporting documents yet. Which part of your account would be hardest to prove if ${party} simply denied it?`,
+      likely_argument: `${party} could argue that the disputed facts rest only on your description unless independent evidence is produced.`
     });
   }
+
   qs.push({
-    question: "Is there any part of this situation that was, at least partly, a misunderstanding or shared responsibility, rather than entirely one-sided?",
-    likely_argument: "The other party will likely frame the situation as a misunderstanding or shared responsibility, rather than something entirely their fault."
+    question: contact
+      ? `You said your attempt to resolve it was: “${contact}” What explanation could ${party} give for that response, and is there anything in writing that rules their explanation out?`
+      : `What reasonable explanation could ${party} give for the disagreement, including a misunderstanding, a different oral agreement, or something you may not have documented?`,
+    likely_argument: `${party} could frame the dispute as a misunderstanding, a different agreement, or shared responsibility rather than a one-sided failure.`
   });
+
   return qs;
 }
 
@@ -1443,60 +1634,62 @@ function buildFallbackUnsupportedAssertions(intake) {
   if (!intake.evidence || intake.evidence.trim().length === 0) {
     items.push("You haven't listed any supporting evidence yet — most of your account currently rests on your own description alone.");
   }
-  if (items.length === 0) {
-    items.push("Review your account above for any specific claims (dates, amounts, promises) that aren't directly backed by the evidence you listed — these may be harder to substantiate if the other party disputes them.");
-  }
+  // If the simple fallback cannot identify a concrete unsupported assertion,
+  // return none rather than inventing a gap just to populate the section.
   return items;
 }
 
 function buildClaimSummaryFallback(intake, questions, answers) {
   const amountNum = parseClaimAmount(intake.amount);
   const fee = estimateFilingFee(amountNum);
+  const suitability = evaluateSCTSuitability(intake);
+
   let sctNote;
-  if (amountNum === null) {
-    sctNote = "An amount wasn't clearly specified, so this can't be checked against the SCT's claim limit (SGD 20,000, or SGD 30,000 with a signed Memorandum of Consent). Confirm the current limits and eligible claim types on judiciary.gov.sg.";
-  } else if (amountNum <= 20000) {
-    sctNote = `The amount given (${intake.amount}) is within the SCT's standard claim limit of SGD 20,000, based on the reference material. This is informational only, not an eligibility determination — eligibility also depends on claim type, so confirm on judiciary.gov.sg.`;
-  } else if (amountNum <= 30000) {
-    sctNote = `The amount given (${intake.amount}) exceeds the standard SGD 20,000 SCT limit but is within the SGD 30,000 limit available if both parties sign a Memorandum of Consent, per the reference material. Confirm this on judiciary.gov.sg.`;
+  if (suitability.status === "unlikely") {
+    sctNote = `The preliminary SCT check flagged this matter: ${suitability.reasons.join(" ")} This is not a legal determination; verify the correct forum using official Singapore Courts information.`;
+  } else if (suitability.status === "needs_check") {
+    sctNote = `The basic SCT checks are not conclusive yet: ${suitability.warnings.join(" ")} Verify these points before relying on the SCT route.`;
+  } else if (amountNum !== null && amountNum <= 20000) {
+    sctNote = `No issue was identified in the basic category, service, amount and time checks supplied to this tool. The amount (${intake.amount}) is within the standard SGD 20,000 limit. The official CJTS pre-filing assessment remains the proper eligibility check.`;
   } else {
-    sctNote = `The amount given (${intake.amount}) appears to exceed the SCT's claim limits (SGD 20,000, or SGD 30,000 with both parties' consent), based on the reference material. Confirm current limits on judiciary.gov.sg before proceeding.`;
+    sctNote = "No issue was identified in the basic checks supplied to this tool, but this remains only a preliminary screen. Confirm eligibility through official Singapore Courts information and the CJTS pre-filing assessment.";
   }
 
-  const checklist = [
-    "Complete the pre-filing assessment on CJTS to check eligibility and get the assessment ID you'll need to file.",
-    "Gather proof of the transaction or agreement (invoices, receipts, contracts).",
-    "Collect correspondence with the other party (messages, emails, letters), and prepare non-English documents with an English translation.",
-    "Put together a clear, dated timeline of what happened.",
-    "Confirm current claim limits, eligible claim types, and filing fees directly on judiciary.gov.sg before filing."
-  ];
-  if (amountNum !== null && amountNum > 30000) {
-    checklist.push("Consider that this amount may be outside SCT jurisdiction even with consent — verify against judiciary.gov.sg before relying on the SCT route at all.");
+  let checklist;
+  if (suitability.status === "unlikely") {
+    checklist = [
+      "Preserve and organise the documents and messages you already have.",
+      "Prepare a clear, dated timeline separating what you personally know from what the other party said.",
+      "Identify any important assertion that is not backed by a document, photo, message, receipt, contract, or witness.",
+      "Verify the correct forum or next process through official Singapore Courts information before taking a filing step."
+    ];
   } else {
-    checklist.push("Keep in mind that if you eventually need to enforce an order, that's a separate step with its own effort and no guaranteed outcome — worth weighing in advance.");
+    checklist = [
+      ...(suitability.status === "needs_check" ? ["Resolve the eligibility point(s) flagged in the preliminary SCT check before relying on the SCT route."] : []),
+      "Complete the official pre-filing assessment on CJTS to check eligibility and obtain the assessment ID needed to file.",
+      "Gather proof of the transaction or agreement (invoices, receipts, contracts).",
+      "Collect correspondence with the other party (messages, emails, letters), and prepare non-English documents with an English translation.",
+      "Put together a clear, dated timeline of what happened.",
+      "Verify current process details directly on judiciary.gov.sg before filing.",
+      "Keep in mind that enforcement is a separate step if an order is made and is not guaranteed to succeed."
+    ];
   }
 
   const sourceFacts = [
-    { fact: "SCT claim limit is SGD 20,000, or SGD 30,000 if both parties sign a Memorandum of Consent.", grounded: true },
-    { fact: "A pre-filing assessment on CJTS is required to check eligibility and obtain the assessment ID needed to file.", grounded: true },
-    { fact: "Filing and service happen through the Community Justice and Tribunals System (CJTS), an online portal.", grounded: true },
-    { fact: "Parties may attempt eNegotiation or eMediation online, or a Registrar's consultation, before any hearing is needed.", grounded: true },
-    { fact: "The tribunal takes a judge-led approach and is not bound by strict rules of evidence, unlike a typical civil trial.", grounded: true }
+    { fact: "The SCT standard claim limit is SGD 20,000 and can be extended to SGD 30,000 if both parties sign a Memorandum of Consent.", grounded: true },
+    { fact: "Most SCT claims generally must be filed within 2 years from when the cause of action arose; certain unfair-practice claims can use a different rule.", grounded: true },
+    { fact: "The SCT reference material excludes motor-vehicle property damage, neighbour disputes, employment disputes, and claims where the respondent cannot be served in Singapore.", grounded: true }
   ];
-  if (fee) {
-    sourceFacts.push({ fact: `Filing fees for this range are approximately ${fee}, per the reference material.`, grounded: true });
+  if (suitability.status !== "unlikely") {
+    sourceFacts.push({ fact: "The CJTS pre-filing assessment gives a non-conclusive indication of SCT eligibility and provides the assessment ID needed to file.", grounded: true });
+    if (fee) sourceFacts.push({ fact: `Filing fees for this amount range are approximately ${fee}, based on the embedded reference material.`, grounded: true });
   }
 
-  // Static definitions for the jargon terms this fallback itself uses above
-  // (CJTS, Memorandum of Consent, eNegotiation/eMediation, enforcement),
-  // kept in sync with the checklist/source_tagged_facts so the fallback
-  // path offers the same term-clarification the live AI path does.
   const glossary = [
-    { term: "CJTS", definition: "The Community Justice and Tribunals System — the online portal used to file, serve, and manage an SCT claim." },
-    { term: "Pre-filing assessment", definition: "A step on CJTS you complete before filing, to check eligibility and get the assessment ID required to submit a claim." },
-    { term: "Memorandum of Consent", definition: "A document both parties sign to raise the claim limit from SGD 20,000 to SGD 30,000." },
-    { term: "eNegotiation / eMediation", definition: "Online tools within CJTS that let both parties try to resolve the dispute themselves before any court session is needed." },
-    { term: "Enforcement", definition: "The separate legal process (e.g. a Writ of Seizure and Sale, or Garnishee proceedings) used to collect on an order if the other party doesn't pay voluntarily — not guaranteed to succeed, and involves its own fees." }
+    { term: "Memorandum of Consent", definition: "A document both parties sign to raise the SCT claim limit from SGD 20,000 to SGD 30,000." },
+    { term: "Cause of action", definition: "The event or wrong that gives rise to a claim; it is used to work out the general filing period." },
+    { term: "CJTS", definition: "The Community Justice and Tribunals System, the online system used for SCT matters." },
+    { term: "Pre-filing assessment", definition: "A CJTS step that gives a non-conclusive indication of SCT eligibility and produces the assessment ID needed to file." }
   ];
 
   return {
@@ -1512,11 +1705,11 @@ function buildClaimSummaryFallback(intake, questions, answers) {
       likely_argument: item.likely_argument,
       user_response: answers[i] || "(no response given)"
     })),
-    checklist: checklist,
+    checklist,
     source_tagged_facts: sourceFacts,
-    glossary: glossary,
+    glossary,
     unsupported_assertions: buildFallbackUnsupportedAssertions(intake),
-    verify_reminder: "This summary was organised using a built-in template (the AI service couldn't be reached just now) — verify all details directly on judiciary.gov.sg before filing."
+    verify_reminder: "This summary used the built-in fallback because the AI service could not be reached. Verify important details directly on judiciary.gov.sg before taking any filing step."
   };
 }
 
@@ -1533,6 +1726,7 @@ async function generateClaimSummary() {
 
   const userPayload = {
     intake: intakeAnswers,
+    preliminary_sct_check: evaluateSCTSuitability(intakeAnswers),
     counter_perspective: biasQuestions.map((item, i) => ({ question: item.question, likely_argument: item.likely_argument, user_response: biasAnswers[i] || "(no response given)" }))
   };
 
@@ -1587,11 +1781,21 @@ async function generateClaimSummary() {
 
 function renderOutput(data, isFallback) {
   const cs = data.claim_summary || {};
-  const checklist = data.checklist || [];
   const counters = data.counter_perspective_considered || [];
   const sourceFacts = data.source_tagged_facts || [];
   const glossary = data.glossary || [];
   const unsupported = data.unsupported_assertions || [];
+  const suitability = evaluateSCTSuitability(intakeAnswers);
+  const suitabilityClass = suitability.status === "unlikely" ? "gate-reason" : "info-note";
+  const suitabilityDetails = [...suitability.reasons, ...suitability.warnings];
+  const checklist = suitability.status === "unlikely"
+    ? [
+        "Preserve and organise the documents, messages, photos and receipts you already have.",
+        "Prepare a clear dated timeline and separate what you personally observed from what the other party told you.",
+        "Identify any important assertion that is not currently supported by the evidence you listed.",
+        "Verify the correct forum and procedure through official Singapore Courts information before taking any filing step."
+      ]
+    : (data.checklist || []);
 
   const fallbackBanner = isFallback ? `
     <div class="bias-banner" style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
@@ -1604,8 +1808,8 @@ function renderOutput(data, isFallback) {
     <div class="compliance-badge">
       <span class="badge-icon">✓</span>
       <div>
-        <div class="badge-title">Courts' GenAI Guide-aligned</div>
-        The process facts above are drawn only from the cited reference material embedded in this tool (SCT Act, CPFTA, judiciary.gov.sg, and the Registrar's GenAI Guide) — not freely generated. This is not a guarantee against every possible error; please still verify independently on judiciary.gov.sg before filing.
+        <div class="badge-title">Responsible AI safeguards</div>
+        This tool separates user-provided facts from grounded SCT process information, challenges the user's assumptions, avoids predicting who will win, and reminds the user to verify independently. It is designed around the Courts' GenAI Guide; it is not an official Court certification or a guarantee against every possible error.
       </div>
     </div>
   `;
@@ -1613,6 +1817,11 @@ function renderOutput(data, isFallback) {
   document.getElementById("outputContent").innerHTML = `
     ${fallbackBanner}
     ${complianceBadge}
+    <div class="card output-section">
+      <h3>Preliminary SCT check <span class="source-tag">deterministic + grounded</span></h3>
+      <p style="font-size:14.5px; margin:0 0 8px;"><strong>${escapeHtml(suitabilityLabel(suitability))}</strong></p>
+      ${suitabilityDetails.length ? `<div class="${suitabilityClass}" style="margin-top:8px;">${suitabilityDetails.map(x => `• ${escapeHtml(x)}`).join("<br>")}</div>` : `<div class="info-note" style="margin-top:8px;">No issue was found in the basic category, service, monetary and date checks supplied to this tool. This is still not a legal determination; the official CJTS pre-filing assessment remains the proper eligibility check.</div>`}
+    </div>
     <div class="card output-section">
       <h3>Claim summary</h3>
       <div class="summary-field"><span class="label">Dispute type</span><span>${escapeHtml(cs.dispute_type || "—")}</span></div>
@@ -1623,15 +1832,19 @@ function renderOutput(data, isFallback) {
 
     <div class="card output-section">
       <h3>Is this an SCT-type matter? <span class="source-tag">SCT Guide reference</span></h3>
-      <p style="font-size:14.5px; color:var(--ink-soft); margin:0;">${escapeHtml(data.sct_relevance_note || "Not enough information to assess against the reference material.")}</p>
+      <p style="font-size:14.5px; color:var(--ink-soft); margin:0;">${escapeHtml(
+        suitability.status === "unlikely"
+          ? "The deterministic preliminary check flagged one or more basic SCT eligibility conditions. Claim Companion will organise your information but should not be treated as recommending an SCT filing. Verify the correct forum using official sources."
+          : (data.sct_relevance_note || "Not enough information to assess against the reference material.")
+      )}</p>
     </div>
 
     <div class="card output-section">
-      <h3>Your account vs. what the other side will likely argue</h3>
+      <h3>Challenge your account: your version vs. a possible respondent perspective</h3>
       ${counters.map(c => `
         <div class="counter-considered">
           <div class="q">${escapeHtml(c.question)}</div>
-          ${c.likely_argument ? `<div class="likely-argument-inline"><span class="label">They'll likely argue:</span> ${escapeHtml(c.likely_argument)}</div>` : ""}
+          ${c.likely_argument ? `<div class="likely-argument-inline"><span class="label">Possible respondent perspective:</span> ${escapeHtml(c.likely_argument)}</div>` : ""}
           <div class="a"><span class="label">Your response:</span> ${escapeHtml(c.user_response)}</div>
         </div>
       `).join("")}
@@ -1672,7 +1885,7 @@ function renderOutput(data, isFallback) {
     </div>` : ""}
 
     <div class="final-note">
-      ${data.verify_reminder ? escapeHtml(data.verify_reminder) + " " : ""}This summary was generated to help you organise information — it is not legal advice and does not assess whether you will succeed. Fees, claim limits, and procedures should be verified on the State Courts website before filing. Consider speaking with a lawyer or the Community Justice Centre if you're unsure.
+      ${data.verify_reminder ? escapeHtml(data.verify_reminder) + " " : ""}This summary was generated to help you organise information — it is not legal advice and does not assess whether you will succeed. ${suitability.status === "unlikely" ? "Because the preliminary SCT check was flagged, verify the correct forum and procedure through official Singapore Courts information before taking any filing step." : "Fees, claim limits, eligibility and procedures should be verified on the State Courts website before filing."} Consider speaking with a lawyer or the Community Justice Centre if you're unsure.
     </div>
 
     <div class="actions" style="margin-top:8px;">
