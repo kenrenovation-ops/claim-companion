@@ -69,6 +69,16 @@
     line-height: 1.55;
     border-left: 2px solid var(--border-strong);
     padding-left: 12px;
+    max-height: 200px;
+    overflow: hidden;
+    transition: max-height 0.25s ease, opacity 0.2s ease, margin-top 0.25s ease;
+  }
+  .disclaimer-bar.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+    padding-top: 0;
+    padding-bottom: 0;
   }
 
   .disclaimer-bar a { color: var(--teal); }
@@ -85,9 +95,17 @@
     background: var(--border);
     border-radius: 2px;
     overflow: hidden;
+    position: relative;
   }
-  .steps .seg.done, .steps .seg.active { background: var(--teal); }
-  .steps .seg.active { opacity: 0.55; }
+  .steps .seg.done { background: var(--teal); }
+  .steps .seg .fill {
+    position: absolute;
+    top: 0; left: 0; height: 100%;
+    width: 0%;
+    background: var(--teal);
+    opacity: 0.65;
+    transition: width 0.2s ease;
+  }
 
   .step-label {
     font-size: 13px;
@@ -189,6 +207,44 @@
     font-size: 13.5px;
     color: var(--ink-soft);
     margin-bottom: 14px;
+  }
+
+  .radio-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .radio-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 5px;
+    padding: 11px 14px;
+    font-size: 14.5px;
+    cursor: pointer;
+    background: var(--paper);
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .radio-option:hover { border-color: var(--teal); }
+  .radio-option input { margin-top: 3px; flex-shrink: 0; }
+  .radio-option.selected { border-color: var(--teal); background: var(--teal-soft); }
+
+  .gate-card {
+    border-left: 3px solid var(--amber);
+  }
+  .gate-card h2 {
+    font-size: 19px;
+    margin: 0 0 10px;
+  }
+  .gate-card p { font-size: 14.5px; color: var(--ink-soft); line-height: 1.55; }
+  .gate-reason {
+    background: var(--amber-soft);
+    border-radius: 5px;
+    padding: 12px 14px;
+    font-size: 13.5px;
+    color: #7a4d1f;
+    margin: 14px 0;
   }
 
   textarea, input[type=text] {
@@ -307,8 +363,28 @@
     font-size: 14px;
     margin-top: 8px;
   }
-  .counter-considered .q { font-weight: 600; margin-bottom: 3px; font-size: 13.5px; }
-  .counter-considered .a { color: #5a3a15; }
+  .counter-considered .q { font-weight: 600; margin-bottom: 6px; font-size: 13.5px; }
+  .counter-considered .a { color: #5a3a15; margin-top: 6px; }
+  .counter-considered .label { font-weight: 600; color: var(--ink); }
+  .counter-considered .likely-argument-inline {
+    font-size: 13px;
+    color: #7a4d1f;
+    background: rgba(255,255,255,0.5);
+    border-radius: 4px;
+    padding: 6px 8px;
+    margin: 4px 0;
+  }
+  .counter-considered .likely-argument-inline .label { color: #7a4d1f; }
+
+  .bias-question .likely-argument {
+    font-size: 13px;
+    color: #7a4d1f;
+    background: var(--amber-soft);
+    border-radius: 4px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+  }
+  .bias-question .likely-argument .label { font-weight: 600; }
 
   .final-note {
     font-size: 13px;
@@ -479,7 +555,7 @@
       <h1>Claim Companion</h1>
       <span class="tag">SCT filing helper</span>
     </div>
-    <div class="disclaimer-bar">
+    <div class="disclaimer-bar" id="disclaimerBar">
       This tool helps you organise information for a possible Small Claims Tribunals filing. It does not give legal advice, does not guarantee your claim's success, and is not a substitute for consulting a lawyer or the State Courts. Built following the Courts' Guide on the Use of Generative AI Tools by Court Users.
     </div>
   </header>
@@ -525,6 +601,19 @@
       <button class="ghost" id="btnIntakeBack">Back</button>
       <div class="right">
         <button class="primary" id="btnIntakeNext">Next</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCREEN 1b: ELIGIBILITY GATE -->
+  <section class="screen" id="screen-gate">
+    <div class="step-label">Before you continue</div>
+    <div class="card gate-card" id="gateCardContent"></div>
+    <div class="actions">
+      <button class="ghost" id="btnGateBack">Back</button>
+      <div class="right">
+        <button class="ghost" id="btnGateStartOver">Start over</button>
+        <button class="primary" id="btnGateContinueAnyway">I understand, continue anyway</button>
       </div>
     </div>
   </section>
@@ -607,6 +696,14 @@ JURISDICTION / ELIGIBILITY
   Singapore (the claim must be served in Singapore on the respondent). If the tribunal
   decides mid-proceeding that a claim is outside its jurisdiction, it must discontinue the
   case and advise both parties — the claimant may then still pursue it in another court.
+- Where a matter is heard: employment disputes (e.g. salary, wrongful dismissal claims)
+  are generally handled by the Employment Claims Tribunals (ECT); neighbour disputes are
+  handled by the Community Disputes Resolution Tribunals (CDRT), as above; motor vehicle
+  property damage claims are generally pursued through the vehicle owners' insurers, or if
+  needed as a civil claim in the State Courts (Magistrate's or District Court, depending on
+  the amount) rather than the SCT. This tool cannot determine which venue is correct for a
+  specific case — it can only flag that the SCT itself is very unlikely to be the right one
+  for these categories, based on the exclusions above.
 - Lawyers are not allowed to represent parties in SCT proceedings (s.23). Limited
   exceptions allow a representative in specific cases: the Government, a Town Council, a
   body corporate, a partnership, an unincorporated association, or the Singapore Business
@@ -796,7 +893,10 @@ You will be given the user's intake answers and their responses to counter-persp
   },
   "sct_relevance_note": "1-2 sentences on whether this looks like the kind of matter SCT typically handles, based ONLY on the SCT reference material — consider the full list of claim types (sale of goods/services, property damage, tenancy, unfair practice under CPFTA, and the narrower statutory categories), not just sale-of-goods/services. Phrase as informational, not a legal determination. If reference material doesn't clearly cover it, or the claim looks like an excluded category (motor vehicle damage, neighbour dispute, employment, respondent outside Singapore), say so plainly.",
   "counter_perspective_considered": [
-    {"question": "the counter-question asked", "user_response": "what the user said in response"}
+    {"question": "the counter-question asked", "likely_argument": "the one-sentence likely counter-argument that was shown alongside it", "user_response": "what the user said in response"}
+  ],
+  "unsupported_assertions": [
+    "a specific factual claim from the user's OWN account (in dispute_nature, prior_contact, or their counter-perspective responses) that is not backed by anything in their listed evidence — phrase plainly, e.g. 'That the contractor verbally promised completion by 30 March — this isn't in any of the evidence listed.' Base this ONLY on comparing what the user actually said against what they actually listed as evidence; do not invent claims they didn't make. If everything in their account is backed by listed evidence, or there isn't enough information to tell, return an empty array rather than inventing a gap."
   ],
   "checklist": [
     "specific, concrete next step or document to gather, tailored to this case — include at least one item about completing the pre-filing assessment on CJTS to get an assessment ID (needed to file), one about verifying any process detail against judiciary.gov.sg directly (per the Guide's accuracy requirements, phrased naturally rather than as a disclaimer), and if the user's amount/evidence suggests they may eventually need to enforce an order, one item gently noting that enforcement is a separate step with its own effort and no guaranteed outcome"
@@ -821,20 +921,44 @@ Base every field on the actual user input given to you. Do not invent details th
    ============================================================ */
 const BIAS_QUESTION_SYSTEM_PROMPT = `You help self-represented persons preparing a claim at the Singapore Small Claims Tribunals think about their dispute from more than one angle, before they finalise a claim summary.
 
-You will be given the user's intake answers describing their dispute. Generate exactly 3 counter-perspective questions that are SPECIFIC to what they described — not generic templates. Each question should genuinely challenge the user to consider:
-- What the other party's version of events might reasonably be.
-- Any gaps, ambiguity, or missing evidence in what the user has described.
+You will be given the user's intake answers describing their dispute. Generate exactly 3 counter-perspective items that are SPECIFIC to what they described — not generic templates. Each item must genuinely challenge the user to consider:
+- What the other party's version of events might reasonably be — including what they would say they delivered, agreed, or were owed.
+- Any gaps, ambiguity, or missing evidence in what the user has described — including anything agreed verbally but not in writing.
 - Any part of the situation that might be partly a misunderstanding or shared responsibility, rather than entirely one-sided.
 
-Do not be accusatory or assume the user is wrong. Do not give legal advice or assess who is likely right. Reference specific details from their account (e.g. dates, the other party's role, what evidence they do or don't have) so the questions feel tailored, not generic.
+Do not be accusatory or assume the user is wrong. Do not give legal advice or assess who is likely right. Reference specific details from their account (e.g. dates, the other party's role, what evidence they do or don't have) so each item feels tailored, not generic.
+
+For each of the 3 items, return TWO separate fields:
+- "question": an open question that prompts the USER to reflect and respond in their own words (this is what gets shown to them with a text box).
+- "likely_argument": a short, blunt, one-sentence statement of what the OTHER PARTY would most plausibly argue on this specific point, based only on what the user has described — written as a direct claim (e.g. "The shop will likely argue the damage could have happened after you left the store, since nothing in your evidence rules that out."), not as a question.
 
 Respond with ONLY a JSON object, no markdown fences, no preamble, in this exact shape:
-{"questions": ["question 1", "question 2", "question 3"]}`;
+{"items": [
+  {"question": "question 1", "likely_argument": "one-sentence likely argument 1"},
+  {"question": "question 2", "likely_argument": "one-sentence likely argument 2"},
+  {"question": "question 3", "likely_argument": "one-sentence likely argument 3"}
+]}`;
 
 /* ============================================================
    INTAKE QUESTIONS
    ============================================================ */
 const INTAKE_QUESTIONS = [
+  {
+    id: "claim_category",
+    title: "Which best describes your situation?",
+    hint: "This determines whether the Small Claims Tribunals can hear your matter at all — pick the closest match.",
+    type: "radio",
+    options: [
+      { value: "goods_services", label: "A purchase of goods or a service that went wrong" },
+      { value: "property_damage", label: "Property damage (not from a vehicle accident, not a neighbour dispute)" },
+      { value: "tenancy", label: "A residential tenancy dispute (lease term of 2 years or less)" },
+      { value: "unfair_practice", label: "An unfair sales or business practice by a supplier" },
+      { value: "motor_vehicle", label: "Property damage from a motor vehicle accident" },
+      { value: "neighbour", label: "A dispute with a neighbour" },
+      { value: "employment", label: "An employment-related dispute (e.g. salary, wrongful dismissal)" },
+      { value: "other_unsure", label: "Something else / not sure" }
+    ]
+  },
   {
     id: "dispute_nature",
     title: "What's the dispute about?",
@@ -950,12 +1074,31 @@ function setScreen(name) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   document.getElementById("screen-" + name).classList.add("active");
 
-  const segMap = { intro: 0, intake: 1, bias: 2, output: 3 };
+  // Collapse the full disclaimer after the intro screen — it doesn't need
+  // to repeat at full size on every step, per feedback that it was eating
+  // a quarter of the viewport throughout the flow.
+  document.getElementById("disclaimerBar").classList.toggle("collapsed", name !== "intro");
+
+  // "gate" reuses the same segment as "intake" — it's a sub-state of the
+  // intake step, not a distinct stage of the overall flow.
+  const segMap = { intro: 0, intake: 1, gate: 1, bias: 2, output: 3 };
   const activeIdx = segMap[name];
   document.querySelectorAll(".steps .seg").forEach((seg, i) => {
-    seg.classList.remove("done", "active");
-    if (i < activeIdx) seg.classList.add("done");
-    else if (i === activeIdx) seg.classList.add("active");
+    seg.classList.remove("done");
+    seg.innerHTML = "";
+    if (i < activeIdx) {
+      seg.classList.add("done");
+    } else if (i === activeIdx) {
+      const fill = document.createElement("div");
+      fill.className = "fill";
+      // Full width for single-question stages (bias, output); intake gets
+      // a granular fill based on actual question progress, updated again
+      // from renderIntakeQuestion() as the user moves through it.
+      fill.style.width = (name === "intake" || name === "gate")
+        ? `${Math.round((intakeIndex / INTAKE_QUESTIONS.length) * 100)}%`
+        : "100%";
+      seg.appendChild(fill);
+    }
   });
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -978,14 +1121,32 @@ document.getElementById("btnStartIntake").addEventListener("click", () => {
    ============================================================ */
 document.getElementById("intakeStepTotal").textContent = INTAKE_QUESTIONS.length;
 
+function updateIntakeProgressFill() {
+  const activeSeg = document.querySelectorAll(".steps .seg")[1]; // intake is segment index 1
+  const fill = activeSeg && activeSeg.querySelector(".fill");
+  if (fill) {
+    fill.style.width = `${Math.round((intakeIndex / INTAKE_QUESTIONS.length) * 100)}%`;
+  }
+}
+
 function renderIntakeQuestion() {
   const q = INTAKE_QUESTIONS[intakeIndex];
   document.getElementById("intakeStepNum").textContent = intakeIndex + 1;
 
   const existing = intakeAnswers[q.id] || "";
-  const inputTag = q.type === "textarea"
-    ? `<textarea id="intakeInput" placeholder="${escapeHtml(q.placeholder)}">${escapeHtml(existing)}</textarea>`
-    : `<input type="text" id="intakeInput" placeholder="${escapeHtml(q.placeholder)}" value="${escapeHtml(existing)}">`;
+  let inputTag;
+  if (q.type === "radio") {
+    inputTag = `<div class="radio-options" id="radioOptions">${q.options.map(opt => `
+      <label class="radio-option${existing === opt.value ? " selected" : ""}">
+        <input type="radio" name="intakeRadio" value="${escapeHtml(opt.value)}" ${existing === opt.value ? "checked" : ""}>
+        <span>${escapeHtml(opt.label)}</span>
+      </label>
+    `).join("")}</div>`;
+  } else if (q.type === "textarea") {
+    inputTag = `<textarea id="intakeInput" placeholder="${escapeHtml(q.placeholder)}">${escapeHtml(existing)}</textarea>`;
+  } else {
+    inputTag = `<input type="text" id="intakeInput" placeholder="${escapeHtml(q.placeholder)}" value="${escapeHtml(existing)}">`;
+  }
 
   document.getElementById("questionBlock").innerHTML = `
     <h2>${escapeHtml(q.title)}</h2>
@@ -993,15 +1154,110 @@ function renderIntakeQuestion() {
     ${inputTag}
   `;
 
+  if (q.type === "radio") {
+    document.querySelectorAll('#radioOptions input[type=radio]').forEach(input => {
+      input.addEventListener("change", () => {
+        document.querySelectorAll('#radioOptions .radio-option').forEach(el => el.classList.remove("selected"));
+        input.closest(".radio-option").classList.add("selected");
+      });
+    });
+  }
+
   document.getElementById("btnIntakeBack").style.visibility = intakeIndex === 0 ? "hidden" : "visible";
   document.getElementById("btnIntakeNext").textContent =
     intakeIndex === INTAKE_QUESTIONS.length - 1 ? "Continue to review" : "Next";
+
+  updateIntakeProgressFill();
+}
+
+// Categories the SCT explicitly does not hear (see SCT_REFERENCE above) —
+// this is a hard-coded, deterministic check, not an AI judgment call, so
+// it's exactly as reliable as the reference material it's drawn from.
+const EXCLUDED_CATEGORIES = {
+  motor_vehicle: {
+    label: "property damage from a motor vehicle accident",
+    redirect: "This is generally pursued through the vehicle owners' insurers, or as a civil claim in the State Courts (Magistrate's or District Court, depending on the amount) — not the SCT."
+  },
+  neighbour: {
+    label: "a dispute with a neighbour",
+    redirect: "Neighbour disputes are handled by the Community Disputes Resolution Tribunals (CDRT), not the SCT."
+  },
+  employment: {
+    label: "an employment-related dispute",
+    redirect: "Employment disputes (e.g. salary, wrongful dismissal) are generally handled by the Employment Claims Tribunals (ECT), not the SCT."
+  }
+};
+
+function showEligibilityGate(reasonHtml) {
+  document.getElementById("gateCardContent").innerHTML = reasonHtml;
+  setScreen("gate");
+}
+
+document.getElementById("btnGateBack").addEventListener("click", () => {
+  setScreen("intake");
+});
+document.getElementById("btnGateStartOver").addEventListener("click", () => {
+  document.getElementById("btnStartOver").click();
+});
+document.getElementById("btnGateContinueAnyway").addEventListener("click", () => {
+  if (intakeIndex < INTAKE_QUESTIONS.length - 1) {
+    intakeIndex++;
+    renderIntakeQuestion();
+    setScreen("intake");
+  } else {
+    goToBiasCheck();
+  }
+});
+
+function readCurrentIntakeValue(q) {
+  if (q.type === "radio") {
+    const checked = document.querySelector('#radioOptions input[type=radio]:checked');
+    return checked ? checked.value : "";
+  }
+  return document.getElementById("intakeInput").value.trim();
 }
 
 document.getElementById("btnIntakeNext").addEventListener("click", async () => {
   const q = INTAKE_QUESTIONS[intakeIndex];
-  const val = document.getElementById("intakeInput").value.trim();
+  const val = readCurrentIntakeValue(q);
+
+  if (q.type === "radio" && !val) {
+    // Don't silently accept an unanswered required category question —
+    // this gate is only reliable if this question is actually answered.
+    document.getElementById("questionBlock").querySelector(".hint").insertAdjacentHTML("afterend",
+      '<div style="color:var(--error); font-size:13px; margin-bottom:10px;">Please choose one option to continue.</div>');
+    return;
+  }
+
   intakeAnswers[q.id] = val;
+
+  // GATE 1: excluded claim category (motor vehicle / neighbour / employment).
+  // Hard-coded against SCT_REFERENCE's stated exclusions — not an AI call,
+  // not a judgment call, just a direct lookup.
+  if (q.id === "claim_category" && EXCLUDED_CATEGORIES[val]) {
+    const info = EXCLUDED_CATEGORIES[val];
+    showEligibilityGate(`
+      <h2>The SCT likely can't hear this <span class="source-tag">SCT Guide reference</span></h2>
+      <p>You selected <strong>${escapeHtml(info.label)}</strong>. Based on the reference material this tool is grounded in, the Small Claims Tribunals generally does not hear this category of dispute.</p>
+      <div class="gate-reason">${escapeHtml(info.redirect)}</div>
+      <p>This isn't a legal determination — every case has specifics that could change this. If you're not sure, you can continue anyway and the tool will still organise your information, but you should verify the right venue on judiciary.gov.sg or with a lawyer before relying on the SCT route.</p>
+    `);
+    return;
+  }
+
+  // GATE 2: claim amount exceeds even the extended SCT limit.
+  if (q.id === "amount") {
+    const amountNum = parseClaimAmount(val);
+    if (amountNum !== null && amountNum > 30000) {
+      showEligibilityGate(`
+        <h2>Your amount exceeds the SCT's limit <span class="source-tag">SCT Guide reference</span></h2>
+        <p>You entered <strong>${escapeHtml(val)}</strong>. The SCT's claim limit is SGD 20,000, or SGD 30,000 if both parties sign a Memorandum of Consent — based on the reference material, this amount is above both.</p>
+        <div class="gate-reason">You have two options: pursue the claim in a different court for the full amount (e.g. the State Courts' District Court, depending on the amount) — a lawyer can advise on this — or, per the Small Claims Tribunals Act, you may "abandon" the amount above SGD 30,000 to bring the claim within the SCT's jurisdiction. Abandoning the excess is a full and final discharge of the whole original claim, not just the reduced portion — you would be giving up that excess permanently.</div>
+        <p>This isn't a legal determination. If you'd like to continue anyway (e.g. because you intend to abandon the excess), you can — the tool will organise your information based on the amount you entered.</p>
+      `);
+      return;
+    }
+  }
 
   if (intakeIndex < INTAKE_QUESTIONS.length - 1) {
     intakeIndex++;
@@ -1013,7 +1269,7 @@ document.getElementById("btnIntakeNext").addEventListener("click", async () => {
 
 document.getElementById("btnIntakeBack").addEventListener("click", () => {
   const q = INTAKE_QUESTIONS[intakeIndex];
-  intakeAnswers[q.id] = document.getElementById("intakeInput").value.trim();
+  intakeAnswers[q.id] = readCurrentIntakeValue(q);
   if (intakeIndex > 0) {
     intakeIndex--;
     renderIntakeQuestion();
@@ -1064,11 +1320,14 @@ async function generateCounterQuestions(answers) {
 
     const parsed = extractJson(textBlock.text);
 
-    if (!Array.isArray(parsed.questions) || parsed.questions.length === 0) {
-      throw new Error("Response did not contain a valid questions array.");
+    if (!Array.isArray(parsed.items) || parsed.items.length === 0) {
+      throw new Error("Response did not contain a valid items array.");
     }
 
-    return parsed.questions.slice(0, 3);
+    return parsed.items.slice(0, 3).map(item => ({
+      question: item.question || "",
+      likely_argument: item.likely_argument || ""
+    }));
   } catch (err) {
     console.warn("Falling back to rule-based counter-questions:", err.message || err);
     return buildCounterQuestions(answers);
@@ -1091,21 +1350,34 @@ function extractJson(rawText) {
 
 function buildCounterQuestions(answers) {
   const qs = [];
-  qs.push("If the other party described this dispute, what do you think they would say happened?");
+  qs.push({
+    question: "If the other party described this dispute, what do you think they would say happened?",
+    likely_argument: "The other party will likely present a different account of what happened or why, rather than accepting your version outright."
+  });
   if (answers.evidence && answers.evidence.length > 0) {
-    qs.push("Is there anything about your evidence that might be incomplete, unclear, or open to a different interpretation?");
+    qs.push({
+      question: "Is there anything about your evidence that might be incomplete, unclear, or open to a different interpretation?",
+      likely_argument: "The other party may argue your evidence doesn't clearly prove what you say it does, or is open to another explanation."
+    });
   } else {
-    qs.push("You haven't listed much evidence yet — is there a reason certain documents or proof might be missing or hard to get?");
+    qs.push({
+      question: "You haven't listed much evidence yet — is there a reason certain documents or proof might be missing or hard to get?",
+      likely_argument: "Without documented evidence, the other party may argue there's nothing concrete supporting your account."
+    });
   }
-  qs.push("Is there any part of this situation that was, at least partly, a misunderstanding or shared responsibility, rather than entirely one-sided?");
+  qs.push({
+    question: "Is there any part of this situation that was, at least partly, a misunderstanding or shared responsibility, rather than entirely one-sided?",
+    likely_argument: "The other party will likely frame the situation as a misunderstanding or shared responsibility, rather than something entirely their fault."
+  });
   return qs;
 }
 
 function renderBiasQuestions() {
   const container = document.getElementById("biasQuestions");
-  container.innerHTML = biasQuestions.map((q, i) => `
+  container.innerHTML = biasQuestions.map((item, i) => `
     <div class="bias-question">
-      <div class="q">${escapeHtml(q)}</div>
+      <div class="q">${escapeHtml(item.question)}</div>
+      ${item.likely_argument ? `<div class="likely-argument"><span class="label">Likely counter-argument:</span> ${escapeHtml(item.likely_argument)}</div>` : ""}
       <textarea id="biasInput${i}" placeholder="Take a moment to answer honestly — this stays with you and shapes a more balanced summary."></textarea>
     </div>
   `).join("");
@@ -1153,6 +1425,28 @@ function estimateFilingFee(amountNum) {
   if (amountNum <= 10000) return "$20 (individual) / $100 (other entity)";
   if (amountNum <= 30000) return "1% of the amount claimed (individual) / 3% (other entity)";
   return null;
+}
+
+// Simple, honest heuristic for the fallback path — deliberately generic
+// rather than pretending AI-level judgment. The live AI path does this
+// properly by actually reasoning over the full case; this just flags the
+// most common, reliably-detectable pattern (verbal claims with no
+// independent documentation) and otherwise prompts the user to self-check.
+function buildFallbackUnsupportedAssertions(intake) {
+  const items = [];
+  const combined = `${intake.dispute_nature || ""} ${intake.prior_contact || ""}`.toLowerCase();
+  const evidence = (intake.evidence || "").toLowerCase();
+  if (/verbal|told me|said|promised|agreed over the phone|agreed verbally/.test(combined)
+      && !/recording|witness|written confirmation/.test(evidence)) {
+    items.push("Any verbal statements, promises, or agreements mentioned in your account currently have no independent documentation (e.g. a recording, witness, or written confirmation) — this could be harder to prove if disputed.");
+  }
+  if (!intake.evidence || intake.evidence.trim().length === 0) {
+    items.push("You haven't listed any supporting evidence yet — most of your account currently rests on your own description alone.");
+  }
+  if (items.length === 0) {
+    items.push("Review your account above for any specific claims (dates, amounts, promises) that aren't directly backed by the evidence you listed — these may be harder to substantiate if the other party disputes them.");
+  }
+  return items;
 }
 
 function buildClaimSummaryFallback(intake, questions, answers) {
@@ -1213,13 +1507,15 @@ function buildClaimSummaryFallback(intake, questions, answers) {
       key_facts: intake.dispute_nature || "not specified"
     },
     sct_relevance_note: sctNote,
-    counter_perspective_considered: questions.map((q, i) => ({
-      question: q,
+    counter_perspective_considered: questions.map((item, i) => ({
+      question: item.question,
+      likely_argument: item.likely_argument,
       user_response: answers[i] || "(no response given)"
     })),
     checklist: checklist,
     source_tagged_facts: sourceFacts,
     glossary: glossary,
+    unsupported_assertions: buildFallbackUnsupportedAssertions(intake),
     verify_reminder: "This summary was organised using a built-in template (the AI service couldn't be reached just now) — verify all details directly on judiciary.gov.sg before filing."
   };
 }
@@ -1237,7 +1533,7 @@ async function generateClaimSummary() {
 
   const userPayload = {
     intake: intakeAnswers,
-    counter_perspective: biasQuestions.map((q, i) => ({ question: q, user_response: biasAnswers[i] || "(no response given)" }))
+    counter_perspective: biasQuestions.map((item, i) => ({ question: item.question, likely_argument: item.likely_argument, user_response: biasAnswers[i] || "(no response given)" }))
   };
 
   const userMessage = `Here is the user's intake information and their responses to counter-perspective questions. Produce the JSON output as instructed.\n\n${JSON.stringify(userPayload, null, 2)}`;
@@ -1295,6 +1591,7 @@ function renderOutput(data, isFallback) {
   const counters = data.counter_perspective_considered || [];
   const sourceFacts = data.source_tagged_facts || [];
   const glossary = data.glossary || [];
+  const unsupported = data.unsupported_assertions || [];
 
   const fallbackBanner = isFallback ? `
     <div class="bias-banner" style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
@@ -1330,14 +1627,24 @@ function renderOutput(data, isFallback) {
     </div>
 
     <div class="card output-section">
-      <h3>What you considered from the other side</h3>
+      <h3>Your account vs. what the other side will likely argue</h3>
       ${counters.map(c => `
         <div class="counter-considered">
           <div class="q">${escapeHtml(c.question)}</div>
-          <div class="a">${escapeHtml(c.user_response)}</div>
+          ${c.likely_argument ? `<div class="likely-argument-inline"><span class="label">They'll likely argue:</span> ${escapeHtml(c.likely_argument)}</div>` : ""}
+          <div class="a"><span class="label">Your response:</span> ${escapeHtml(c.user_response)}</div>
         </div>
       `).join("")}
     </div>
+
+    ${unsupported.length ? `
+    <div class="card output-section">
+      <h3>Assertions without supporting evidence</h3>
+      <p style="font-size:13px; color:var(--ink-soft); margin:0 0 10px;">Specific claims in your own account that aren't currently backed by anything you listed as evidence. This doesn't mean they're untrue — just that they may be harder to prove if disputed.</p>
+      <ul class="checklist">
+        ${unsupported.map(item => `<li><span>•</span><span>${escapeHtml(item)}</span></li>`).join("")}
+      </ul>
+    </div>` : ""}
 
     <div class="card output-section">
       <h3>Your next-step checklist</h3>
