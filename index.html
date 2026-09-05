@@ -927,9 +927,9 @@
   }
   .assistant-quick-chips {
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     gap: 6px;
-    overflow-x: auto;
+    overflow: visible;
     padding-bottom: 2px;
   }
   .quick-chip {
@@ -1075,23 +1075,543 @@
     align-items: center;
     justify-content: center;
   }
+  /* =========================
+     TEMPLATE 6 — SPLIT LAYOUT
+     ========================= */
+  body {
+    background:
+      radial-gradient(circle at top left, rgba(20, 78, 82, 0.06), transparent 28%),
+      linear-gradient(180deg, #f5f7fb 0%, #eef3f9 100%);
+  }
+
+  .workspace {
+    max-width: 1520px;
+    margin: 0 auto;
+    padding: 28px 24px 44px;
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr) 330px;
+    gap: 24px;
+    align-items: start;
+    position: relative;
+  }
+
+  .info-rail {
+    position: sticky;
+    top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .hero-panel,
+  .hero-card,
+  .source-card {
+    border-radius: 22px;
+    border: 1px solid rgba(28, 54, 78, 0.10);
+    overflow: hidden;
+    box-shadow: 0 18px 38px rgba(18, 38, 63, 0.08);
+  }
+
+  .hero-panel {
+    color: #ffffff;
+    background:
+      linear-gradient(165deg, rgba(12, 45, 54, 0.92), rgba(33, 106, 111, 0.88)),
+      linear-gradient(180deg, #113944 0%, #1c616a 100%);
+    padding: 24px 22px 22px;
+    position: relative;
+  }
+
+  .hero-panel::after {
+    content: "";
+    position: absolute;
+    right: -22px;
+    bottom: -34px;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.07);
+  }
+
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: #f7fdff;
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  .hero-panel h2 {
+    margin: 18px 0 10px;
+    font-size: 28px;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+  }
+
+  .hero-panel p {
+    margin: 0 0 16px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.92);
+    font-size: 14px;
+  }
+
+  .hero-pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .hero-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 11px;
+    border-radius: 999px;
+    font-size: 12px;
+    background: rgba(255,255,255,0.11);
+    border: 1px solid rgba(255,255,255,0.17);
+  }
+
+  .hero-foot {
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: rgba(255,255,255,0.86);
+    border-top: 1px solid rgba(255,255,255,0.16);
+    padding-top: 14px;
+  }
+
+  .hero-card,
+  .source-card {
+    background: #ffffff;
+    padding: 18px;
+  }
+
+  .hero-card h3,
+  .source-card h3 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    color: #13323e;
+    letter-spacing: -0.01em;
+  }
+
+  .hero-list {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .hero-list li {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 10px;
+    align-items: start;
+    font-size: 13px;
+    line-height: 1.45;
+    color: #304554;
+  }
+
+  .hero-list .num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #eaf4f4;
+    color: #1f6f74;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .source-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .source-badge {
+    border-radius: 999px;
+    background: #f3f7fa;
+    border: 1px solid #d9e4ea;
+    padding: 7px 10px;
+    font-size: 11.5px;
+    line-height: 1.35;
+    color: #455a69;
+  }
+
+  .app {
+    max-width: none;
+    margin: 0;
+    padding: 0 28px 120px;
+    background: #fff;
+    border: 1px solid rgba(30, 62, 90, 0.10);
+    border-radius: 24px;
+    box-shadow: 0 18px 40px rgba(24, 39, 75, 0.08);
+  }
+
+  header.top {
+    padding: 26px 0 20px;
+    border-bottom: 1px solid #e6ebf0;
+    margin-bottom: 24px;
+  }
+
+  header.top .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .brand-mark {
+    width: 46px;
+    height: 46px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #1f6f74 0%, #143d4b 100%);
+    color: #fff;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
+    letter-spacing: -0.02em;
+  }
+
+  .brand-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  header.top .brand h1 {
+    font-size: 22px;
+    line-height: 1.05;
+    margin: 0;
+    letter-spacing: -0.02em;
+  }
+
+  header.top .brand .tag {
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  .disclaimer-bar {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-left: none;
+    background: #f7f9fb;
+    border: 1px solid #e5ebf1;
+    border-radius: 14px;
+  }
+
+  .disclaimer-bar.compact {
+    max-height: 44px;
+    padding: 11px 14px;
+    margin-top: 14px;
+    border-radius: 12px;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0 0 24px;
+  }
+
+  .steps .seg {
+    min-width: 0;
+    min-height: 60px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 12px 13px;
+    border: 1px solid #dbe4eb;
+    border-radius: 14px;
+    background: #f7f9fb;
+    color: #647483;
+    overflow: hidden;
+  }
+
+  .steps .seg.active {
+    border-color: #8bb9bc;
+    background: #eef7f7;
+    color: #174f53;
+    box-shadow: 0 6px 14px rgba(31, 111, 116, 0.08);
+  }
+
+  .steps .seg.done {
+    border-color: #bfd7d9;
+    background: #f3f8f8;
+    color: #2d6a6e;
+  }
+
+  .stage-number {
+    width: 26px;
+    height: 26px;
+    flex: 0 0 26px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #cfd9e1;
+    background: #fff;
+    color: inherit;
+    font-size: 11.5px;
+    font-weight: 800;
+  }
+
+  .steps .seg.active .stage-number,
+  .steps .seg.done .stage-number {
+    border-color: #7caeb1;
+    background: #1f6f74;
+    color: #fff;
+  }
+
+  .stage-name {
+    min-width: 0;
+    font-size: 11.5px;
+    line-height: 1.25;
+    font-weight: 700;
+    text-align: left;
+  }
+
+  .steps .seg .fill {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    width: 0%;
+    background: linear-gradient(90deg, #1f6f74 0%, #2b8a90 100%);
+    opacity: 1;
+    transition: width 0.2s ease;
+  }
+
+  .card {
+    border-radius: 18px;
+    border: 1px solid #e5ebf1;
+    box-shadow: 0 10px 22px rgba(26, 38, 51, 0.04);
+  }
+
+  .intro-card,
+  .form-card,
+  .summary-card,
+  .checklist-card,
+  .challenge-card {
+    background: #fff;
+  }
+
+  .assistant-panel {
+    position: sticky;
+    top: 24px;
+    right: auto;
+    bottom: auto;
+    width: 100%;
+    max-width: none;
+    height: min(760px, calc(100vh - 48px));
+    max-height: calc(100vh - 48px);
+    border-radius: 24px;
+    border: 1px solid rgba(30, 62, 90, 0.10);
+    background: #f5f6f8;
+    box-shadow: 0 18px 38px rgba(24, 39, 75, 0.10);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    z-index: 2;
+  }
+
+  .assistant-panel.collapsed {
+    display: none;
+  }
+  .workspace.helpdesk-collapsed {
+    grid-template-columns: 300px minmax(0, 1fr);
+  }
+
+  .assistant-reopen {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    border-radius: 999px;
+    padding: 12px 15px;
+    display: none;
+    z-index: 80;
+    box-shadow: 0 14px 28px rgba(0,0,0,0.16);
+  }
+
+  .assistant-reopen.visible {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .assistant-panel-header {
+    padding: 15px 16px 14px;
+    background: linear-gradient(180deg, #ffffff 0%, #f4f6f8 100%);
+  }
+
+  .assistant-avatar-big {
+    width: 38px;
+    height: 38px;
+    font-size: 18px;
+    border-radius: 14px;
+  }
+
+  .assistant-panel-header h3 {
+    font-size: 18px;
+  }
+
+  .assistant-heading-sub {
+    font-size: 12px;
+  }
+
+  .assistant-heading-mini {
+    font-size: 11px;
+  }
+
+  .assistant-note {
+    font-size: 12px;
+    padding: 10px 14px;
+  }
+
+  .assistant-quick-wrap {
+    padding: 10px 14px 8px;
+  }
+
+  .assistant-quick-label {
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+
+  .quick-chip {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    background: #fff;
+    border: 1px solid #d6dee7;
+  }
+
+  .assistant-chat-shell {
+    padding: 12px 14px 14px;
+  }
+
+  .legal-chat-log {
+    max-height: none;
+    background: #dfe9e7;
+    border: 1px solid #d3dddc;
+    border-radius: 14px;
+    padding: 12px;
+  }
+
+  .chat-bubble {
+    font-size: 12.5px;
+  }
+
+  .legal-helper-form {
+    margin-top: 12px;
+    border-radius: 16px;
+    background: #fff;
+  }
+
+  .legal-helper-form textarea {
+    min-height: 86px;
+    font-size: 13px;
+    border-radius: 9px;
+  }
+
+  .legal-helper-form button {
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    border-radius: 12px;
+  }
+
+
+  @media (max-width: 1320px) {
+    .workspace {
+      grid-template-columns: 260px minmax(0, 1fr) 310px;
+      gap: 18px;
+    }
+    .app {
+      padding-left: 22px;
+      padding-right: 22px;
+    }
+    .hero-panel h2 {
+      font-size: 24px;
+    }
+  }
 
   @media (max-width: 1100px) {
     .workspace {
-      max-width: 920px;
-      padding-right: 24px;
+      grid-template-columns: 1fr 320px;
+      max-width: 1180px;
+    }
+    .workspace.helpdesk-collapsed {
+      grid-template-columns: 1fr;
+    }
+    .info-rail {
+      grid-column: 1 / -1;
+      position: static;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
     }
     .assistant-panel {
-      width: 280px;
+      position: sticky;
+      top: 20px;
+      height: min(720px, calc(100vh - 32px));
+      max-height: calc(100vh - 32px);
+    }
+  }
+
+  @media (max-width: 900px) {
+    .workspace {
+      grid-template-columns: 1fr;
+      max-width: 860px;
+      padding: 18px 16px 28px;
+    }
+    .app {
+      order: 1;
+      max-width: none;
+      margin: 0;
+    }
+    .info-rail {
+      order: 2;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    .assistant-panel {
+      order: 3;
+      position: static;
+      width: 100%;
+      height: auto;
+      max-height: none;
+      min-height: 560px;
+    }
+    .assistant-reopen {
       right: 14px;
       bottom: 14px;
-      max-height: min(600px, calc(100vh - 20px));
     }
-    .legal-chat-log { min-height: 300px; height: auto; }
   }
+
   @media (max-width: 640px) {
     .workspace {
       padding: 0;
+      gap: 0;
+    }
+    .info-rail {
+      padding: 16px 16px 8px;
+      gap: 12px;
+    }
+    .hero-panel,
+    .hero-card,
+    .source-card {
+      border-radius: 18px;
     }
     .app {
       max-width: none;
@@ -1102,32 +1622,31 @@
       padding-left: 16px;
       padding-right: 16px;
     }
+    .steps {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .steps .seg {
+      min-height: 54px;
+      padding: 9px 10px 11px;
+    }
+    .stage-name { font-size: 11px; }
     .assistant-panel {
-      right: 10px;
-      bottom: 10px;
-      width: calc(100vw - 20px);
-      max-height: min(560px, calc(100vh - 20px));
-      border-radius: 18px;
+      position: static;
+      width: auto;
+      min-height: 500px;
+      border-radius: 0;
+      border-left: none;
+      border-right: none;
+      box-shadow: none;
     }
-    .assistant-note {
-      display: none;
-    }
-    .legal-chat-log { min-height: 260px; height: auto; }
-    .chat-stack { max-width: 86%; }
-  }
-
-
-  @media (max-width: 640px) {
-    .assistant-panel {
-      height: min(560px, calc(100vh - 20px));
-      max-height: calc(100vh - 20px);
-    }
+    .assistant-note { display: none; }
     .assistant-chat-shell {
       min-height: 0;
       flex: 1 1 0;
     }
     .legal-chat-log {
-      min-height: 0 !important;
+      min-height: 280px !important;
       height: auto !important;
       flex: 1 1 0;
     }
@@ -1147,33 +1666,82 @@
     }
     .legal-helper-form button {
       display: inline-flex !important;
-      flex: 0 0 36px;
-      width: 36px !important;
-      min-width: 36px !important;
-      height: 36px;
+      flex: 0 0 40px;
+      width: 40px !important;
+      min-width: 40px !important;
+      height: 40px;
       padding: 0 !important;
     }
+    .assistant-reopen {
+      right: 10px;
+      bottom: 10px;
+    }
+    .chat-stack { max-width: 88%; }
+    .quick-chip { width: auto !important; }
   }
 
 @media print {
-    .glossary-tab, .glossary-panel,
-    .steps, .stage-captions, .actions, .disclaimer-bar, #eligibilityNotice,
+    .glossary-tab, .glossary-panel, .info-rail,
+    .steps, .actions, .disclaimer-bar, #eligibilityNotice,
     button { display: none !important; }
     body { background: #fff; }
-    .card { border: 1px solid #999; break-inside: avoid; }
+    .workspace { display: block; max-width: none; padding: 0; }
+    .app { border: 0; box-shadow: none; border-radius: 0; padding: 0; }
+    header.top { margin-bottom: 16px; }
+    .card { border: 1px solid #999; box-shadow: none; break-inside: avoid; }
     .compliance-badge { border-color: #999; }
   }
 </style>
 </head>
 <body>
 
+
 <div class="workspace">
+<aside class="info-rail" aria-label="Claim Companion overview">
+  <section class="hero-panel">
+    <div class="hero-eyebrow">Template 6 · Split Layout</div>
+    <h2>Prepare an SCT claim more clearly — and more responsibly.</h2>
+    <p>Claim Companion helps self-represented persons organise their facts, spot possible SCT issues early, and stress-test their own account before filing.</p>
+    <div class="hero-pill-row">
+      <span class="hero-pill">✓ Deterministic SCT checks</span>
+      <span class="hero-pill">✓ Counter-perspective challenge</span>
+      <span class="hero-pill">✓ Procedural AI Helpdesk</span>
+    </div>
+    <div class="hero-foot">
+      Built to reduce hallucination risk and confirmation bias. The tool does not give legal advice and important details should still be verified independently.
+    </div>
+  </section>
+
+  <section class="hero-card">
+    <h3>How the workflow is structured</h3>
+    <ol class="hero-list">
+      <li><span class="num">1</span><span><strong>Start & scope</strong><br>Collect basic dispute details and show the responsible-use disclaimer.</span></li>
+      <li><span class="num">2</span><span><strong>SCT checks</strong><br>Run client-side eligibility and category checks before the summary is built.</span></li>
+      <li><span class="num">3</span><span><strong>Challenge stage</strong><br>Stress-test the user’s account with counter-perspective questions and discrepancy detection.</span></li>
+      <li><span class="num">4</span><span><strong>Preparation summary</strong><br>Show readiness, eligibility notes, next steps and downloadable output.</span></li>
+    </ol>
+  </section>
+
+  <section class="source-card">
+    <h3>Grounding approach</h3>
+    <div class="source-badges">
+      <span class="source-badge">Singapore Courts guidance</span>
+      <span class="source-badge">Small Claims Tribunals Act</span>
+      <span class="source-badge">CPFTA / Lemon Law</span>
+      <span class="source-badge">No legal-advice guardrails</span>
+      <span class="source-badge">Source-linked eligibility notes</span>
+    </div>
+  </section>
+</aside>
 <div class="app">
 
   <header class="top">
     <div class="brand">
-      <h1>Claim Companion</h1>
-      <span class="tag">SCT preparation helper</span>
+      <div class="brand-mark" aria-hidden="true">CC</div>
+      <div class="brand-copy">
+        <h1>Claim Companion</h1>
+        <span class="tag">Small Claims Tribunals preparation helper</span>
+      </div>
     </div>
     <div class="disclaimer-bar" id="disclaimerBar">
       <span class="disclaimer-full">This tool helps you organise information for a possible Small Claims Tribunals filing. It does not give legal advice, does not guarantee your claim's success, and is not a substitute for consulting a lawyer or the State Courts. Built with reference to the Courts' Guide on the Use of Generative AI Tools by Court Users. Important information should be independently verified before filing.</span>
@@ -1181,18 +1749,20 @@
     </div>
   </header>
 
-  <div class="steps" id="stepIndicator">
-    <div class="seg" data-seg="0"></div>
-    <div class="seg" data-seg="1"></div>
-    <div class="seg" data-seg="2"></div>
-    <div class="seg" data-seg="3"></div>
-  </div>
-  <div class="stage-captions" id="stageCaptions" aria-hidden="true">
-    <span data-stage="0">Start</span>
-    <span data-stage="1">SCT check & facts</span>
-    <span data-stage="2">Challenge</span>
-    <span data-stage="3">Summary</span>
-  </div>
+  <nav class="steps" id="stepIndicator" aria-label="Claim preparation progress">
+    <div class="seg" data-seg="0" aria-current="step">
+      <span class="stage-number">1</span><span class="stage-name">Start</span><span class="fill" aria-hidden="true"></span>
+    </div>
+    <div class="seg" data-seg="1">
+      <span class="stage-number">2</span><span class="stage-name">SCT check &amp; facts</span><span class="fill" aria-hidden="true"></span>
+    </div>
+    <div class="seg" data-seg="2">
+      <span class="stage-number">3</span><span class="stage-name">Challenge</span><span class="fill" aria-hidden="true"></span>
+    </div>
+    <div class="seg" data-seg="3">
+      <span class="stage-number">4</span><span class="stage-name">Summary</span><span class="fill" aria-hidden="true"></span>
+    </div>
+  </nav>
 
   <!-- SCREEN 0: INTRO -->
   <section class="screen active" id="screen-intro">
@@ -1260,8 +1830,6 @@
       <span></span>
     </div>
   </section>
-
-</div>
 
 </div>
 
@@ -1894,7 +2462,9 @@ const INTAKE_QUESTIONS = [
    process, available at any point in the flow.
    ============================================================ */
 const STATIC_GLOSSARY = [
-  { term: "Jurisdiction", definition: "The legal authority of a court or tribunal to hear and decide a particular kind of dispute." },
+  { term: "Jurisdiction", definition: "The legal authority of a court or tribunal to hear and decide a particular kind of dispute.", source_key: "SCT_ELIGIBILITY" },
+  { term: "Filing fees", definition: "SCT filing fees depend on the amount claimed and whether the claimant is an individual or another entity: up to S$5,000, S$10 / S$50; above S$5,000 to S$10,000, S$20 / S$100; above S$10,000 to S$30,000, 1% / 3% respectively.", source_key: "SCT_FILING" },
+  { term: "Lawyer representation", definition: "Lawyers are generally not allowed to represent parties in SCT proceedings. The Act lists limited exceptions where certain entities or approved persons may represent a party.", source_key: "SCT_ACT" },
   { term: "Statutory / claim limit", definition: "A monetary limit set by law or rules on the amount a tribunal can hear; for the SCT the standard claim limit is SGD 20,000, with an extended SGD 30,000 limit if both parties sign a Memorandum of Consent." },
   { term: "CPFTA", definition: "The Consumer Protection (Fair Trading) Act, which protects consumers against specified unfair practices and provides civil remedies in relevant consumer transactions.", source_key: "CPFTA_ACT" },
   { term: "Lemon Law", definition: "A common name for CPFTA Part 3 protections concerning consumer goods that do not conform to the applicable contract. The Act sets out repair/replacement and, in specified circumstances, price reduction or rescission; it is not a separate court or tribunal process.", source_key: "CPFTA_ACT" },
@@ -1929,8 +2499,10 @@ const STATIC_GLOSSARY = [
 function toggleGlossaryPanel(open) {
   const panel = document.getElementById("glossaryPanel");
   const reopen = document.getElementById("btnGlossaryTab");
+  const workspace = document.querySelector(".workspace");
   panel.classList.toggle("collapsed", !open);
   reopen.classList.toggle("visible", !open);
+  workspace?.classList.toggle("helpdesk-collapsed", !open);
 }
 document.getElementById("btnGlossaryTab").addEventListener("click", () => toggleGlossaryPanel(true));
 document.getElementById("btnGlossaryClose").addEventListener("click", () => toggleGlossaryPanel(false));
@@ -2036,6 +2608,11 @@ async function sendLegalChat(prefilledQuestion = "") {
   if (isClearlyMeritsOrStrategyQuestion(question)) {
     const guarded = fallbackLegalHelper(question);
     renderLegalChatMessage("assistant", guarded.answer, guarded.source_key || "GENAI_GUIDE");
+    legalChatHistory.push(
+      { role: "user", content: question },
+      { role: "assistant", content: guarded.answer }
+    );
+    legalChatHistory = legalChatHistory.slice(-8);
     input.focus();
     return;
   }
@@ -2048,11 +2625,20 @@ async function sendLegalChat(prefilledQuestion = "") {
     const reply = await askLegalHelper(question);
     loadingNode.remove();
     renderLegalChatMessage("assistant", reply.answer, reply.source_key || "NONE");
+    legalChatHistory.push(
+      { role: "user", content: question },
+      { role: "assistant", content: reply.answer }
+    );
   } catch (err) {
     loadingNode.remove();
     const fallback = fallbackLegalHelper(question);
     renderLegalChatMessage("assistant", fallback.answer, fallback.source_key || "NONE");
+    legalChatHistory.push(
+      { role: "user", content: question },
+      { role: "assistant", content: fallback.answer }
+    );
   } finally {
+    legalChatHistory = legalChatHistory.slice(-8);
     btn.disabled = false;
     input.focus();
   }
@@ -2109,25 +2695,22 @@ function setScreen(name) {
   const segMap = { intro: 0, intake: 1, bias: 2, output: 3 };
   const activeIdx = segMap[name];
   document.querySelectorAll(".steps .seg").forEach((seg, i) => {
-    seg.classList.remove("done");
-    seg.innerHTML = "";
-    if (i < activeIdx) {
-      seg.classList.add("done");
-    } else if (i === activeIdx) {
-      const fill = document.createElement("div");
-      fill.className = "fill";
-      // Full width for single-question stages (bias, output); intake gets
-      // a granular fill based on actual question progress, updated again
-      // from renderIntakeQuestion() as the user moves through it.
-      fill.style.width = name === "intake"
-        ? `${Math.round((applicablePositionOf(intakeIndex) / applicableQuestionCount()) * 100)}%`
-        : "100%";
-      seg.appendChild(fill);
+    const isDone = i < activeIdx;
+    const isActive = i === activeIdx;
+    seg.classList.toggle("done", isDone);
+    seg.classList.toggle("active", isActive);
+    if (isActive) seg.setAttribute("aria-current", "step");
+    else seg.removeAttribute("aria-current");
+
+    const fill = seg.querySelector(".fill");
+    if (fill) {
+      if (isDone) fill.style.width = "100%";
+      else if (isActive) {
+        fill.style.width = name === "intake"
+          ? `${Math.round((applicablePositionOf(intakeIndex) / applicableQuestionCount()) * 100)}%`
+          : "100%";
+      } else fill.style.width = "0%";
     }
-  });
-  document.querySelectorAll("#stageCaptions span").forEach((caption, i) => {
-    caption.classList.toggle("done", i < activeIdx);
-    caption.classList.toggle("active", i === activeIdx);
   });
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -2154,8 +2737,9 @@ function updateIntakeProgressFill() {
   document.getElementById("intakeStepTotal").textContent = applicableQuestionCount();
   const activeSeg = document.querySelectorAll(".steps .seg")[1]; // intake is segment index 1
   const fill = activeSeg && activeSeg.querySelector(".fill");
+  const total = Math.max(1, applicableQuestionCount());
   if (fill) {
-    fill.style.width = `${Math.round((applicablePositionOf(intakeIndex) / applicableQuestionCount()) * 100)}%`;
+    fill.style.width = `${Math.round((applicablePositionOf(intakeIndex) / total) * 100)}%`;
   }
 }
 
@@ -2259,6 +2843,7 @@ function clearDismissedAmountRuleCodes() {
 function refreshLineItemTotalAndRules() {
   intakeAnswers.claim_items = readLineItemsFromDom();
   clearDismissedAmountRuleCodes();
+  pruneHiddenIntakeAnswers();
   const totalEl = document.getElementById("claimRunningTotal");
   if (totalEl) totalEl.textContent = formatSGD(claimTotal());
   renderEligibilityNotice();
@@ -2308,7 +2893,7 @@ function renderIntakeQuestion() {
   } else if (q.type === "textarea") {
     inputTag = `<textarea id="intakeInput" placeholder="${escapeHtml(q.placeholder || "")}">${escapeHtml(existing)}</textarea>`;
   } else if (q.type === "date") {
-    inputTag = `<input type="date" id="intakeInput" value="${escapeHtml(existing)}" max="${new Date().toISOString().slice(0,10)}">`;
+    inputTag = `<input type="date" id="intakeInput" value="${escapeHtml(existing)}" max="${localIsoDate()}">`;
   } else if (q.type === "number") {
     inputTag = `<input type="number" min="0" step="0.01" id="intakeInput" placeholder="${escapeHtml(q.placeholder || "0.00")}" value="${escapeHtml(existing)}">`;
   } else if (q.type === "line_items") {
@@ -2331,6 +2916,7 @@ function renderIntakeQuestion() {
         input.closest(".radio-option").classList.add("selected");
         intakeAnswers[q.id] = input.value;
         if (["claim_category", "claim_outcome", "memorandum_consent"].includes(q.id)) clearDismissedAmountRuleCodes();
+        pruneHiddenIntakeAnswers();
         renderEligibilityNotice();
       });
     });
@@ -2341,13 +2927,14 @@ function renderIntakeQuestion() {
     if (input) input.addEventListener("input", () => {
       intakeAnswers[q.id] = input.value.trim();
       if (q.id === "contract_value") clearDismissedAmountRuleCodes();
+      pruneHiddenIntakeAnswers();
       renderEligibilityNotice();
     });
   }
 
   document.getElementById("btnIntakeBack").style.visibility = intakeIndex === 0 ? "hidden" : "visible";
   document.getElementById("btnIntakeNext").textContent =
-    intakeIndex === INTAKE_QUESTIONS.length - 1 ? "Continue to review" : "Next";
+    findApplicableIndex(intakeIndex + 1, 1) === -1 ? "Continue to challenge" : "Next";
 
   updateIntakeProgressFill();
   renderEligibilityNotice();
@@ -2367,6 +2954,13 @@ const EXCLUDED_CATEGORIES = {
     source: OFFICIAL_SOURCES.SCT_ELIGIBILITY
   }
 };
+
+function localIsoDate(date = new Date()) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
 
 function twoYearCutoff() {
   const d = new Date();
@@ -2648,6 +3242,41 @@ function isQuestionApplicable(q) {
   return !q.shouldShow || q.shouldShow(intakeAnswers);
 }
 
+function pruneHiddenIntakeAnswers() {
+  let changed;
+  do {
+    changed = false;
+    for (const q of INTAKE_QUESTIONS) {
+      if (q.shouldShow && !q.shouldShow(intakeAnswers) && Object.prototype.hasOwnProperty.call(intakeAnswers, q.id)) {
+        delete intakeAnswers[q.id];
+        changed = true;
+      }
+    }
+  } while (changed);
+}
+
+function clearQuestionError() {
+  document.querySelectorAll("#questionBlock .field-error").forEach(el => el.remove());
+}
+
+function showQuestionError(message) {
+  clearQuestionError();
+  const hint = document.getElementById("questionBlock")?.querySelector(".hint");
+  if (hint) {
+    hint.insertAdjacentHTML("afterend", `<div class="field-error" role="alert" style="color:var(--error); font-size:13px; margin-bottom:10px;">${escapeHtml(message)}</div>`);
+  }
+}
+
+function isCurrentAnswerValid(q, val) {
+  if (q.required === false) return true;
+  if (q.type === "line_items") {
+    const items = normaliseClaimItems(val);
+    return items.length > 0 && items.every(item => item.description && item.amount > 0);
+  }
+  if (q.type === "radio") return Boolean(val);
+  return Boolean(String(val || "").trim());
+}
+
 // Walks the intake array in the given direction (+1 or -1) from a starting
 // index, skipping any question that isn't currently applicable. Returns the
 // next valid index, or -1 if walking off either end of the array.
@@ -2683,17 +3312,21 @@ document.getElementById("btnIntakeNext").addEventListener("click", async () => {
   const q = INTAKE_QUESTIONS[intakeIndex];
   const val = readCurrentIntakeValue(q);
 
-  // Required only if the question doesn't explicitly opt out — the consent
-  // question sets required: false since the whole eligibility engine is
-  // advisory and non-blocking; an unanswered consent question should carry
-  // through as "not yet confirmed", not be forced to a default value.
-  if (q.type === "radio" && !val && q.required !== false) {
-    document.getElementById("questionBlock").querySelector(".hint").insertAdjacentHTML("afterend",
-      '<div style="color:var(--error); font-size:13px; margin-bottom:10px;">Please choose one option to continue.</div>');
+  // Questions are required by default unless they explicitly opt out.
+  // This prevents an empty intake from silently reaching the challenge and summary screens.
+  clearQuestionError();
+  if (!isCurrentAnswerValid(q, val)) {
+    const message = q.type === "radio"
+      ? "Please choose one option to continue."
+      : q.type === "line_items"
+        ? "Please add at least one claim item with a description and an amount above S$0."
+        : "Please complete this field to continue.";
+    showQuestionError(message);
     return;
   }
 
   intakeAnswers[q.id] = val;
+  pruneHiddenIntakeAnswers();
   if (q.id === "claim_items") {
     claimItemsStepCompleted = true;
     clearDismissedAmountRuleCodes();
@@ -2819,10 +3452,12 @@ async function generateCounterQuestions(answers) {
       throw new Error("Response did not contain a valid items array.");
     }
 
-    return parsed.items.slice(0, 3).map(item => ({
-      kind: item.kind || "",
-      question: item.question || "",
-      likely_argument: item.likely_argument || ""
+    const validItems = parsed.items.filter(item => item && typeof item === "object");
+    if (!validItems.length) throw new Error("Response contained no usable challenge items.");
+    return validItems.slice(0, 3).map(item => ({
+      kind: String(item.kind || ""),
+      question: String(item.question || ""),
+      likely_argument: String(item.likely_argument || "")
     }));
   } catch (err) {
     console.warn("Falling back to rule-based counter-questions:", err.message || err);
@@ -2860,10 +3495,12 @@ async function generateFollowUpQuestions(answers, questions, responses, roundNum
     const parsed = extractJson(textBlock.text);
     if (!Array.isArray(parsed.items) || parsed.items.length === 0) throw new Error("No valid follow-up items.");
 
-    return parsed.items.slice(0, 2).map(item => ({
-      kind: item.kind || "Follow-up challenge",
-      question: item.question || "",
-      likely_argument: item.likely_argument || "",
+    const validItems = parsed.items.filter(item => item && typeof item === "object");
+    if (!validItems.length) throw new Error("No usable follow-up items.");
+    return validItems.slice(0, 2).map(item => ({
+      kind: String(item.kind || "Follow-up challenge"),
+      question: String(item.question || ""),
+      likely_argument: String(item.likely_argument || ""),
       round: roundNumber
     }));
   } catch (err) {
@@ -3166,6 +3803,37 @@ function buildClaimSummaryFallback(intake, questions, answers) {
 /* ============================================================
    CLAUDE API CALL + OUTPUT RENDERING
    ============================================================ */
+function asArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function normaliseGeneratedSummary(data, counterPerspective) {
+  const raw = data && typeof data === "object" ? data : {};
+  const rawClaim = raw.claim_summary && typeof raw.claim_summary === "object" && !Array.isArray(raw.claim_summary)
+    ? raw.claim_summary
+    : {};
+
+  return {
+    claim_summary: {
+      dispute_type: String(rawClaim.dispute_type || "not specified"),
+      other_party: String(rawClaim.other_party || "not specified"),
+      amount_claimed: String(rawClaim.amount_claimed || "not specified"),
+      key_facts: String(rawClaim.key_facts || "not specified")
+    },
+    sct_relevance_note: String(raw.sct_relevance_note || ""),
+    counter_perspective_considered: asArray(counterPerspective),
+    unsupported_assertions: asArray(raw.unsupported_assertions).map(x => String(x)).filter(Boolean),
+    checklist: asArray(raw.checklist).map(x => String(x)).filter(Boolean),
+    source_tagged_facts: asArray(raw.source_tagged_facts)
+      .filter(x => x && typeof x === "object" && x.grounded === true && x.fact)
+      .map(x => ({ fact: String(x.fact), grounded: true })),
+    glossary: asArray(raw.glossary)
+      .filter(x => x && typeof x === "object" && x.term && x.definition)
+      .map(x => ({ term: String(x.term), definition: String(x.definition) })),
+    verify_reminder: String(raw.verify_reminder || "")
+  };
+}
+
 async function generateClaimSummary() {
   setScreen("output");
   document.getElementById("outputContent").innerHTML = `
@@ -3226,8 +3894,8 @@ async function generateClaimSummary() {
       throw new Error("Could not parse the assistant's response as structured data.");
     }
 
-    parsed.counter_perspective_considered = userPayload.counter_perspective;
-    renderOutput(parsed, false);
+    const safeSummary = normaliseGeneratedSummary(parsed, userPayload.counter_perspective);
+    renderOutput(safeSummary, false);
   } catch (err) {
     // Hybrid approach, same as the bias-check step: never leave the user
     // on a dead end if the AI call fails. Fall back to a rule-based
@@ -3355,14 +4023,15 @@ function buildTxtSummary(data, eligibility, readiness) {
 }
 
 function renderOutput(data, isFallback) {
-  const cs = data.claim_summary || {};
-  const counters = data.counter_perspective_considered || [];
-  const sourceFacts = data.source_tagged_facts || [];
-  const glossary = data.glossary || [];
-  const unsupported = data.unsupported_assertions || [];
+  data = data && typeof data === "object" ? data : {};
+  const cs = data.claim_summary && typeof data.claim_summary === "object" ? data.claim_summary : {};
+  const counters = asArray(data.counter_perspective_considered);
+  const sourceFacts = asArray(data.source_tagged_facts).filter(f => f && f.grounded === true && f.fact);
+  const glossary = asArray(data.glossary).filter(g => g && g.term && g.definition);
+  const unsupported = asArray(data.unsupported_assertions).map(x => String(x));
   const eligibility = runEligibilityRules(intakeAnswers);
   const readiness = calculateEvidenceReadiness(intakeAnswers, unsupported);
-  let checklist = data.checklist || [];
+  let checklist = asArray(data.checklist).map(x => String(x));
 
   if (eligibility.status === "likely_out_of_scope") {
     checklist = [
@@ -3517,6 +4186,9 @@ document.getElementById("btnStartOver").addEventListener("click", () => {
   document.getElementById("btnStartIntake").disabled = true;
   setScreen("intro");
 });
+
+// Initialise the visual workflow state after all controls and state are ready.
+setScreen("intro");
 
 /* ============================================================
    UTIL
