@@ -17,6 +17,16 @@
 // settings (never commit the key itself), and Vercel auto-deploys this
 // as a live endpoint at: https://<your-project>.vercel.app/api/claude
 
+// Vercel's Hobby plan defaults serverless functions to a 10-second timeout,
+// which is easily exceeded by this endpoint's final-summary call (a long
+// system prompt plus up to 1500 output tokens routinely takes longer than
+// that). Explicitly raising this to 60s — the Hobby plan max without Fluid
+// compute — fixes calls that were silently failing due to Vercel's own
+// platform timeout, not anything wrong with the API key or the code.
+export const config = {
+  maxDuration: 60,
+};
+
 export default async function handler(req, res) {
   // Only allow POST
   if (req.method !== "POST") {
@@ -45,10 +55,12 @@ export default async function handler(req, res) {
     }
 
     // Guard against a hung upstream request outlasting the serverless
-    // function's own execution limit, which would otherwise surface to the
-    // client as a generic platform timeout instead of a clear error.
+    // function's own execution limit. Kept a few seconds below the 60s
+    // maxDuration configured above, so this fires with a clear message
+    // before Vercel's own platform-level timeout would kill the function
+    // with a much less useful error.
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 25000);
+    const timeout = setTimeout(() => controller.abort(), 50000);
 
     let response;
     try {
